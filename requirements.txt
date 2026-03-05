@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+whisper
+pydub
+phonemizer
+pydantic
+nltk
+pronouncing
