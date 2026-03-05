@@ -4,98 +4,145 @@ from difflib import SequenceMatcher
 import epitran
 from langdetect import detect
 import re
-from num2words import num2words  
+from num2words import num2words
 
-# FFmpeg path for Windows
+# FFmpeg path
 AudioSegment.converter = r"C:\Users\fidel\Desktop\FFmpeg\bin\ffmpeg.exe"
 
+# ---------- Audio Conversion ----------
 def file_to_wav(file_path: str, audio_format="m4a") -> Path:
-    """
-    Converts audio file to WAV format.
-    """
     audio = AudioSegment.from_file(file_path, format=audio_format)
     output_path = Path(file_path).with_suffix(".wav")
     audio.export(output_path, format="wav")
     return output_path
 
-# ----- Phoneme comparison -----
-epi_map_cache = {}
 
-def get_phonemes(text: str, lang: str = "eng-Latn") -> list:
-    """
-    Convert text to a phoneme list using Epitran.
-    Handles numbers, ordinals, and unknown words to prevent KeyError.
-    """
-    if lang not in epi_map_cache:
-        epi_map_cache[lang] = epitran.Epitran(lang)
-    epi = epi_map_cache[lang]
+# ---------- Epitran Cache ----------
+epi_cache = {}
+
+def get_epi(lang="eng-Latn"):
+    if lang not in epi_cache:
+        epi_cache[lang] = epitran.Epitran(lang)
+    return epi_cache[lang]
+
+
+# ---------- Text Normalization ----------
+def normalize_word(word: str):
+
+    word = word.lower()
+
+    if word.isdigit():
+        word = num2words(int(word))
+
+    elif re.match(r"\d+(st|nd|rd|th)", word):
+        number = int(re.match(r"(\d+)", word).group(1))
+        word = num2words(number, ordinal=True)
+
+    word = re.sub(r"[^a-zA-Z]", "", word)
+
+    return word
+
+
+# ---------- Convert Word → Phonemes ----------
+def word_to_phonemes(word, epi):
+
+    try:
+        phones = epi.transliterate(word)
+        phones = [p for p in phones if p]
+
+        if phones:
+            return phones
+        else:
+            return list(word)
+
+    except:
+        return list(word)
+
+
+# ---------- Convert Sentence → Phonemes ----------
+def sentence_to_phonemes(text, epi):
+
+    words = [normalize_word(w) for w in text.split()]
+    words = [w for w in words if w]
+
     phonemes = []
 
-    words = text.lower().split()
-    processed_words = []
+    for word in words:
+        phonemes.extend(word_to_phonemes(word, epi))
 
-    for w in words:
-        # Convert digits to words
-        if w.isdigit():
-            w = num2words(int(w))
-        # Convert ordinals like 16th → sixteenth
-        elif re.match(r'\d+(st|nd|rd|th)', w):
-            w = num2words(int(re.match(r'(\d+)', w).group(1)), ordinal=True)
-        # Keep only letters for phonemization
-        w_clean = re.sub(r'[^a-zA-Z]', '', w)
-        if w_clean:
-            processed_words.append(w_clean)
+    return phonemes, words
 
-    for word in processed_words:
-        try:
-            phones = epi.transliterate(word)
-            phones = [p for p in phones if p]  # remove empty phonemes
-            if phones:
-                phonemes.extend(phones)
-            else:
-                # fallback: split letters if Epitran fails
-                phonemes.extend(list(word))
-        except KeyError:
-            phonemes.extend(list(word))  # rough fallback
 
-    return phonemes
+# ---------- Pronunciation Tips ----------
+phoneme_tips = {
+    "θ": "Place your tongue between your teeth to produce the 'th' sound.",
+    "ð": "Voice the 'th' sound like in 'this'.",
+    "r": "Curl the tongue slightly backward when pronouncing 'r'.",
+    "l": "Touch the tongue tip to the ridge behind your upper teeth.",
+    "v": "Touch lower lip to upper teeth and vibrate.",
+    "f": "Blow air between lower lip and upper teeth.",
+}
 
+
+# ---------- Main Comparison ----------
 def compare_phonemes(reference: str, transcript: str):
-    """
-    Compare phonemes for full passages and return score, mistakes, and improvement tips.
-    """
-    # Detect language; fallback to English
+
     try:
         lang = detect(reference)
         lang_code = "eng-Latn" if lang.startswith("en") else "eng-Latn"
     except:
         lang_code = "eng-Latn"
 
-    # Convert text to phonemes
-    ref_phones = get_phonemes(reference, lang_code)
-    trans_phones = get_phonemes(transcript, lang_code)
+    epi = get_epi(lang_code)
 
-    # Compare sequences
-    sm = SequenceMatcher(None, ref_phones, trans_phones)
+    ref_ph, ref_words = sentence_to_phonemes(reference, epi)
+    sp_ph, sp_words = sentence_to_phonemes(transcript, epi)
+
+    matcher = SequenceMatcher(None, ref_ph, sp_ph)
+
     mistakes = []
-    for tag, i1, i2, j1, j2 in sm.get_opcodes():
-        if tag != "equal":
-            mistakes.append({
-                "type": tag,
-                "reference_phonemes": ref_phones[i1:i2],
-                "spoken_phonemes": trans_phones[j1:j2],
-                "position": i1
-            })
+    wrong_phonemes = 0
 
-    # Calculate score
-    total = len(ref_phones)
-    errors = sum(len(m['reference_phonemes']) for m in mistakes)
-    score = max(0, int((1 - errors / total) * 100)) if total else 0
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
 
-    # Generate improvement tips
-    tips = [
-        f"Check pronunciation of phonemes {m['reference_phonemes']} at position {m['position']}"
-        for m in mistakes
-    ]
+        if tag == "equal":
+            continue
+
+        ref_segment = ref_ph[i1:i2]
+        sp_segment = sp_ph[j1:j2]
+
+        mistakes.append({
+            "type": tag,
+            "reference_phonemes": ref_segment,
+            "spoken_phonemes": sp_segment,
+            "position": i1
+        })
+
+        wrong_phonemes += len(ref_segment)
+
+    total = len(ref_ph)
+
+    if total > 0:
+        score = max(0, int((1 - wrong_phonemes / total) * 100))
+    else:
+        score = 0
+
+
+    # ---------- Generate Tips ----------
+    tips = []
+
+    for m in mistakes:
+
+        for phoneme in m["reference_phonemes"]:
+
+            if phoneme in phoneme_tips:
+                tips.append(phoneme_tips[phoneme])
+                break
+
+        else:
+            tips.append(
+                f"Focus on pronouncing phoneme(s): {' '.join(m['reference_phonemes'])}"
+            )
+
 
     return score, mistakes, tips
