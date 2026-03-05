@@ -5,6 +5,7 @@ import epitran
 from langdetect import detect
 import re
 from num2words import num2words
+import pyphen
 
 # FFmpeg path
 AudioSegment.converter = r"C:\Users\fidel\Desktop\FFmpeg\bin\ffmpeg.exe"
@@ -24,6 +25,10 @@ def get_epi(lang="eng-Latn"):
     if lang not in epi_cache:
         epi_cache[lang] = epitran.Epitran(lang)
     return epi_cache[lang]
+
+
+# ---------- Syllable Dictionary ----------
+dic = pyphen.Pyphen(lang="en")
 
 
 # ---------- Text Normalization ----------
@@ -59,18 +64,20 @@ def word_to_phonemes(word, epi):
         return list(word)
 
 
-# ---------- Convert Sentence → Phonemes ----------
-def sentence_to_phonemes(text, epi):
+# ---------- Syllable Extraction ----------
+def get_syllables(word):
 
-    words = [normalize_word(w) for w in text.split()]
-    words = [w for w in words if w]
+    try:
+        return dic.inserted(word).split("-")
+    except:
+        return [word]
 
-    phonemes = []
 
-    for word in words:
-        phonemes.extend(word_to_phonemes(word, epi))
+# ---------- Phoneme Similarity ----------
+def phoneme_similarity(ref_ph, sp_ph):
 
-    return phonemes, words
+    sm = SequenceMatcher(None, ref_ph, sp_ph)
+    return sm.ratio()
 
 
 # ---------- Pronunciation Tips ----------
@@ -84,6 +91,20 @@ phoneme_tips = {
 }
 
 
+def generate_tip(word, phonemes):
+
+    syllables = get_syllables(word)
+
+    if len(syllables) > 1:
+        return f"Try pronouncing it slowly as: {' - '.join(syllables)}"
+
+    for ph in phonemes:
+        if ph in phoneme_tips:
+            return phoneme_tips[ph]
+
+    return f"Practice the pronunciation of '{word}' slowly."
+
+
 # ---------- Main Comparison ----------
 def compare_phonemes(reference: str, transcript: str):
 
@@ -95,54 +116,55 @@ def compare_phonemes(reference: str, transcript: str):
 
     epi = get_epi(lang_code)
 
-    ref_ph, ref_words = sentence_to_phonemes(reference, epi)
-    sp_ph, sp_words = sentence_to_phonemes(transcript, epi)
+    # Normalize words
+    ref_words = [normalize_word(w) for w in reference.split()]
+    sp_words = [normalize_word(w) for w in transcript.split()]
 
-    matcher = SequenceMatcher(None, ref_ph, sp_ph)
+    ref_words = [w for w in ref_words if w]
+    sp_words = [w for w in sp_words if w]
+
+    matcher = SequenceMatcher(None, ref_words, sp_words)
 
     mistakes = []
-    wrong_phonemes = 0
+    correct_words = 0
+    total_words = len(ref_words)
 
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
 
         if tag == "equal":
+            correct_words += (i2 - i1)
             continue
 
-        ref_segment = ref_ph[i1:i2]
-        sp_segment = sp_ph[j1:j2]
+        ref_segment = ref_words[i1:i2]
+        sp_segment = sp_words[j1:j2]
 
-        mistakes.append({
-            "type": tag,
-            "reference_phonemes": ref_segment,
-            "spoken_phonemes": sp_segment,
-            "position": i1
-        })
+        for idx, ref_word in enumerate(ref_segment):
 
-        wrong_phonemes += len(ref_segment)
+            spoken_word = sp_segment[idx] if idx < len(sp_segment) else ""
 
-    total = len(ref_ph)
+            ref_ph = word_to_phonemes(ref_word, epi)
+            sp_ph = word_to_phonemes(spoken_word, epi) if spoken_word else []
 
-    if total > 0:
-        score = max(0, int((1 - wrong_phonemes / total) * 100))
+            similarity = phoneme_similarity(ref_ph, sp_ph)
+
+            mistakes.append({
+                "position": i1 + idx,
+                "expected_word": ref_word,
+                "spoken_word": spoken_word,
+                "expected_phonemes": ref_ph,
+                "spoken_phonemes": sp_ph,
+                "phoneme_similarity": round(similarity, 2),
+                "syllables": get_syllables(ref_word),
+                "tip": generate_tip(ref_word, ref_ph)
+            })
+
+    # ---------- Score ----------
+    if total_words > 0:
+        score = int((correct_words / total_words) * 100)
     else:
         score = 0
 
-
-    # ---------- Generate Tips ----------
-    tips = []
-
-    for m in mistakes:
-
-        for phoneme in m["reference_phonemes"]:
-
-            if phoneme in phoneme_tips:
-                tips.append(phoneme_tips[phoneme])
-                break
-
-        else:
-            tips.append(
-                f"Focus on pronouncing phoneme(s): {' '.join(m['reference_phonemes'])}"
-            )
-
+    # ---------- Human Tips ----------
+    tips = [m["tip"] for m in mistakes]
 
     return score, mistakes, tips

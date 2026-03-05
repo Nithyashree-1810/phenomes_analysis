@@ -12,3 +12,4 @@ langdetect
 num2words
 panphon
 python-multipart
+pyphen

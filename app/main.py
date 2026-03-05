@@ -1,11 +1,13 @@
 import os
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from pathlib import Path
 import whisper
 import torch
 import panphon.featuretable as pf
 import pandas as pd
+
 from app.utils import file_to_wav, compare_phonemes
+
 
 # ---------- Force CPU ----------
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -27,11 +29,15 @@ pf.FeatureTable._read_bases = patched_read_bases
 
 
 # ---------- FastAPI ----------
-app = FastAPI(title="Passage Pronunciation Analyzer")
+app = FastAPI(
+    title="AI Pronunciation Analyzer",
+    description="Detects mispronounced words, phoneme differences, and gives pronunciation tips",
+    version="2.0"
+)
 
 
-# ---------- Whisper Model ----------
-model = whisper.load_model("small.en")   # better than base
+# ---------- Load Whisper ----------
+model = whisper.load_model("small.en")
 
 
 # ---------- API ----------
@@ -42,27 +48,51 @@ def analyze_file_audio(
     audio_format: str = Form("m4a")
 ):
 
-    temp_path = Path(f"temp_{file.filename}")
+    try:
 
-    with open(temp_path, "wb") as f:
-        f.write(file.file.read())
+        # ---------- Save uploaded file ----------
+        temp_path = Path(f"temp_{file.filename}")
 
-    wav_path = file_to_wav(temp_path, audio_format)
+        with open(temp_path, "wb") as f:
+            f.write(file.file.read())
 
-    # Transcribe
-    result = model.transcribe(str(wav_path))
-    transcript = result["text"]
 
-    # Pronunciation comparison
-    score, mistakes, tips = compare_phonemes(reference_text, transcript)
+        # ---------- Convert to WAV ----------
+        wav_path = file_to_wav(temp_path, audio_format)
 
-    temp_path.unlink(missing_ok=True)
-    wav_path.unlink(missing_ok=True)
 
-    return {
-        "transcript": transcript,
-        "reference": reference_text,
-        "score": score,
-        "mistakes": mistakes,
-        "improvement_tips": tips
-    }
+        # ---------- Speech → Text ----------
+        result = model.transcribe(
+            str(wav_path),
+            language="en",
+            fp16=False
+        )
+
+        transcript = result["text"].strip()
+
+
+        # ---------- Pronunciation Analysis ----------
+        score, mistakes, tips = compare_phonemes(reference_text, transcript)
+
+
+        # ---------- Cleanup ----------
+        temp_path.unlink(missing_ok=True)
+        wav_path.unlink(missing_ok=True)
+
+
+        # ---------- API Response ----------
+        return {
+            "transcript": transcript,
+            "reference_text": reference_text,
+            "pronunciation_score": score,
+            "total_mistakes": len(mistakes),
+            "mistakes": mistakes,
+            "improvement_tips": tips
+        }
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Pronunciation analysis failed: {str(e)}"
+        )
