@@ -105,7 +105,7 @@ def generate_tip(word, phonemes):
     return f"Practice the pronunciation of '{word}' slowly."
 
 
-# ---------- Main Comparison ----------
+
 # ---------- Main Comparison ----------
 def compare_phonemes(reference: str, transcript: str):
 
