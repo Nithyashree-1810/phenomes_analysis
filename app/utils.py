@@ -8,7 +8,7 @@ from num2words import num2words
 import pyphen
 
 # FFmpeg path
-AudioSegment.converter = r"C:\Users\fidel\Desktop\FFmpeg\bin\ffmpeg.exe"
+AudioSegment.converter = r""
 
 # ---------- Audio Conversion ----------
 def file_to_wav(file_path: str, audio_format="m4a") -> Path:
