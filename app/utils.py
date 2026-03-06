@@ -106,6 +106,7 @@ def generate_tip(word, phonemes):
 
 
 # ---------- Main Comparison ----------
+# ---------- Main Comparison ----------
 def compare_phonemes(reference: str, transcript: str):
 
     try:
@@ -126,45 +127,62 @@ def compare_phonemes(reference: str, transcript: str):
     matcher = SequenceMatcher(None, ref_words, sp_words)
 
     mistakes = []
-    correct_words = 0
-    total_words = len(ref_words)
+    similarity_scores = []
 
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
 
         if tag == "equal":
-            correct_words += (i2 - i1)
-            continue
 
-        ref_segment = ref_words[i1:i2]
-        sp_segment = sp_words[j1:j2]
+            for i in range(i1, i2):
 
-        for idx, ref_word in enumerate(ref_segment):
+                word = ref_words[i]
+                ph = word_to_phonemes(word, epi)
 
-            spoken_word = sp_segment[idx] if idx < len(sp_segment) else ""
+                similarity_scores.append(1.0)
 
-            ref_ph = word_to_phonemes(ref_word, epi)
-            sp_ph = word_to_phonemes(spoken_word, epi) if spoken_word else []
+        else:
 
-            similarity = phoneme_similarity(ref_ph, sp_ph)
+            ref_segment = ref_words[i1:i2]
+            sp_segment = sp_words[j1:j2]
 
-            mistakes.append({
-                "position": i1 + idx,
-                "expected_word": ref_word,
-                "spoken_word": spoken_word,
-                "expected_phonemes": ref_ph,
-                "spoken_phonemes": sp_ph,
-                "phoneme_similarity": round(similarity, 2),
-                "syllables": get_syllables(ref_word),
-                "tip": generate_tip(ref_word, ref_ph)
-            })
+            for idx, ref_word in enumerate(ref_segment):
 
-    # ---------- Score ----------
-    if total_words > 0:
-        score = int((correct_words / total_words) * 100)
+                spoken_word = sp_segment[idx] if idx < len(sp_segment) else ""
+
+                ref_ph = word_to_phonemes(ref_word, epi)
+                sp_ph = word_to_phonemes(spoken_word, epi) if spoken_word else []
+
+                similarity = phoneme_similarity(ref_ph, sp_ph)
+
+                similarity_scores.append(similarity)
+
+                # ---------- Severity ----------
+                if similarity > 0.8:
+                    severity = "minor"
+                elif similarity > 0.5:
+                    severity = "moderate"
+                else:
+                    severity = "major"
+
+                mistakes.append({
+                    "position": i1 + idx,
+                    "expected_word": ref_word,
+                    "spoken_word": spoken_word,
+                    "expected_phonemes": ref_ph,
+                    "spoken_phonemes": sp_ph,
+                    "phoneme_similarity": round(similarity, 2),
+                    "severity": severity,
+                    "syllables": get_syllables(ref_word),
+                    "tip": generate_tip(ref_word, ref_ph)
+                })
+
+    # ---------- Improved Score ----------
+    if similarity_scores:
+        score = int(sum(similarity_scores) / len(similarity_scores) * 100)
     else:
         score = 0
 
     # ---------- Human Tips ----------
-    tips = [m["tip"] for m in mistakes]
+    tips = list(set([m["tip"] for m in mistakes]))
 
     return score, mistakes, tips
