@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+openai-whisper
+pydub
+phonemizer
+pydantic
+nltk
+pronouncing
+torch
+epitran
+langdetect
+num2words
+panphon
+python-multipart
+pyphen
+openai
+dotenv
