@@ -12,6 +12,10 @@ langdetect
 num2words
 panphon
 python-multipart
+<<<<<<< HEAD
 pyphen
 openai
 dotenv
+=======
+pyphen
+>>>>>>> 538352ba3cd762c646fdfa0dfed5e964c49eb12e
