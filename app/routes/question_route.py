@@ -1,23 +1,20 @@
+# app/routes/question_route.py
+
 from fastapi import APIRouter
-from app.services.question_service import next_question_level
-from app.agents.qb_agent import generate_question
+from app.services.question_service import get_next_question
 
 router = APIRouter(prefix="/question", tags=["question"])
 
-
 @router.get("/next")
-def get_next_question(score: int):
+def get_next_question_route(score: float):
     """
-    Return the next practice question based ONLY on score.
-    No weak phoneme logic is used.
+    Get the next pronunciation practice question based on score.
+    Expected score range: 0.0 to 1.0
     """
-    # Decide level based on score thresholds
-    level = next_question_level(score)
-
-    # Generate sentence for the chosen level
-    question = generate_question(level, weak_phonemes=None)
+    result = get_next_question(score)
 
     return {
-        "difficulty": level,
-        "practice_sentence": question
+        "difficulty": result["difficulty"],
+        "question_text": result["question"]["text"],
+        "question_id": result["question"]["id"]
     }

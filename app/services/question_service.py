@@ -1,9 +1,6 @@
-def next_question_level(score):
+from app.services.question_selector import QuestionGenerationService
 
-    if score >= 85:
-        return "advanced"
+questionGen = QuestionGenerationService()
 
-    if score >= 60:
-        return "intermediate"
-
-    return "beginner"
+def get_next_question(score: float):
+    return questionGen.generate_question(score)
