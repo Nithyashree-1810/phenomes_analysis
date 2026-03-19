@@ -1,45 +1,31 @@
-import os
-from openai import OpenAI
+# qb_agent.py
+# Handles question generation without any LLM.
+# Uses your internal hard-coded question bank + logic.
+
+from app.services.question_selector import QuestionGenerationService
+
+# Initialize service
+question_gen = QuestionGenerationService()
 
 
-   
-from dotenv import load_dotenv
-load_dotenv()
-
-
-
-def get_client():
-    """Create and return an OpenAI client using OPENAI_API_KEY.
-
-    Raises a RuntimeError with instructions if the key is not set.
+def generate_question(score: float) -> dict:
     """
-    api_key = os.getenv("OPENAI_API_KEY")
-    print("Loaded API KEY =", api_key)
-    if not api_key:
-        return None
-    return OpenAI(api_key=api_key)
-
-
-def generate_question(level, weak_phonemes=None):
-
-    prompt = f"""
-    Generate one pronunciation practice sentence.
-
-    Difficulty: {level}
-
-    Keep it natural. Do not include any phoneme list.
-    Output only the sentence.
+    Generate the next pronunciation practice question based on user score.
+    Returns:
+        {
+            "difficulty": "easy",
+            "question": "She sells sea shells by the seashore."
+        }
     """
+    try:
+        result = question_gen.generate_question(score)
+        return result
 
-    client = get_client()
+    except Exception as e:
+        print("Error generating question:", e)
 
-    if client is None:
-        level_text = str(level)
-        return f"({level_text}) Practice this sentence."
-    
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    return response.choices[0].message.content.strip()
+        # fallback safe response
+        return {
+            "difficulty": "basic",
+            "question": "Please repeat the sentence: The sun is bright today."
+        }
