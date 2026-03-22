@@ -16,4 +16,12 @@ pyphen
 openai
 python-dotenv
 langchain-openai
-
+SQLAlchemy==2.0.23
+psycopg2-binary
+librosa
+numpy
+gTTS
+pyphen
+difflib
+python-multipart
+alembic

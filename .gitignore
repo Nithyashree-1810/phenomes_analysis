@@ -1,9 +1,0 @@
-.env
-pytorch_test.py
-run.sh
-test_ffmpeg_path.py
-test_panphon.py
-test_torch.py
-whispher_test.py
-pycache
-app/pycache

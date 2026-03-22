@@ -1,20 +1,19 @@
-# app/routes/question_route.py
-
-from fastapi import APIRouter
-from app.services.question_service import get_next_question
+# routes/question_route.py
+from fastapi import APIRouter, Query
+from app.services.question_service import generate_pronunciation_question
 
 router = APIRouter(prefix="/question", tags=["question"])
 
 @router.get("/next")
-def get_next_question_route(score: float):
+def get_next_question_route(score: float = Query(..., ge=0, le=100)):
     """
-    Get the next pronunciation practice question based on score.
-    Expected score range: 0.0 to 1.0
+    Generate next pronunciation question dynamically based on user score.
     """
-    result = get_next_question(score)
+    questions = generate_pronunciation_question(score, num_questions=1)
+    question = questions[0] if questions else {"difficulty": "easy", "question": "Practice reading aloud."}
 
     return {
-        "difficulty": result["difficulty"],
-        "question_text": result["question"]["text"],
-        "question_id": result["question"]["id"]
+        "difficulty": question["difficulty"],
+        "question_text": question["question"],
+        
     }

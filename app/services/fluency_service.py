@@ -1,32 +1,40 @@
-# fluency_service.py
+# app/services/fluency_service.py
 import librosa
 import numpy as np
+from pathlib import Path
 
+def safe_encode(text: str) -> str:
+    """Windows-safe UTF-8 encoding for logs."""
+    if not text:
+        return ""
+    return text.encode("utf-8", errors="replace").decode("utf-8")
 
-def compute_fluency(audio_path):
+def compute_fluency(audio_path: str) -> float:
     """
-    Return a normalized fluency score between 0.0 and 1.0.
-    Based on voiced-segment ratio.
+    Computes a fluency score (0-100) based on proportion of voiced frames in audio.
+    Fully Windows-safe.
     """
+    try:
+        audio_file = Path(audio_path)
+        if not audio_file.exists():
+            print(f"[ERROR] Audio file does not exist: {audio_path}")
+            return 0.0
 
-    y, sr = librosa.load(audio_path)
+        y, sr = librosa.load(str(audio_file), sr=None)
 
-    # Voice activity detection using RMSE
-    frame_length = 2048
-    hop_length = 512
+        if len(y) < 2048:  # too short to analyze
+            return 0.0
 
-    rmse = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
+        # RMS energy per frame
+        rmse = librosa.feature.rms(y=y, frame_length=2048, hop_length=512)[0]
+        if len(rmse) == 0:
+            return 0.0
 
-    # Speech threshold (adaptive)
-    threshold = 0.04 * np.max(rmse)
+        threshold = 0.04 * np.max(rmse)
+        voiced_frames = rmse > threshold
+        fluency_score = float(np.sum(voiced_frames) / len(rmse)) * 100  # scale to 0-100
+        return max(0.0, min(100.0, fluency_score))
 
-    voiced_frames = rmse > threshold
-    voiced_ratio = np.sum(voiced_frames) / len(rmse)
-
-    # Normalize into 0.0–1.0
-    fluency_score = float(voiced_ratio)
-
-    # clamp to safe range
-    fluency_score = max(0.0, min(1.0, fluency_score))
-
-    return fluency_score
+    except Exception as e:
+        print(f"[ERROR] Fluency compute failed: {safe_encode(str(e))}")
+        return 0.0
