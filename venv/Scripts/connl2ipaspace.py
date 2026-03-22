@@ -1,4 +1,4 @@
-#!C:\Users\fidel\task1\venv\Scripts\python.exe
+#!C:\Users\fidel\Desktop\phenomes_analysis\venv\Scripts\python.exe
 
 import argparse
 import codecs

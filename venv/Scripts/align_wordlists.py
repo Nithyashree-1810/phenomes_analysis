@@ -1,4 +1,4 @@
-#!C:\Users\fidel\task1\venv\Scripts\python.exe
+#!C:\Users\fidel\Desktop\phenomes_analysis\venv\Scripts\python.exe
 from __future__ import print_function
 
 import unicodecsv as csv
@@ -43,7 +43,7 @@ def score(indices):
 
 
 def main(wordlist1, wordlist2, dist_funcs):
-    with open(wordlist1, 'rb') as file_a, open(wordlist2, 'rb') as file_b:
+    with open(wordlist1, 'rb',encoding="utf-8") as file_a, open(wordlist2, 'rb') as file_b:
         reader_a = csv.reader(file_a, encoding='utf-8')
         reader_b = csv.reader(file_b, encoding='utf-8')
         print('Reading word lists...')

@@ -1,31 +1,82 @@
-# qb_agent.py
-# Handles question generation without any LLM.
-# Uses your internal hard-coded question bank + logic.
+# agent.py
+# Handles dynamic passage generation, streaming TTS, and question generation
+# for both listening comprehension and pronunciation practice.
 
-from app.services.question_selector import QuestionGenerationService
+from fastapi.responses import StreamingResponse
+from io import BytesIO
+from gtts import gTTS
+from app.services.agent_service import (
+    generate_passage,
+    generate_questions,
+    generate_pronunciation_questions
+)
 
-# Initialize service
-question_gen = QuestionGenerationService()
+# Map user score to difficulty
+def score_to_difficulty(score: float) -> str:
+    if score < 40:
+        return "easy"
+    elif 40 <= score <= 70:
+        return "medium"
+    else:
+        return "hard"
 
 
-def generate_question(score: float) -> dict:
+def generate_agent_module(score: float) -> dict:
     """
-    Generate the next pronunciation practice question based on user score.
+    Generates:
+    - Passage (from OpenAI)
+    - Streaming audio of passage
+    - Listening comprehension questions
+    - Pronunciation questions
+
     Returns:
         {
-            "difficulty": "easy",
-            "question": "She sells sea shells by the seashore."
+            "difficulty": "...",
+            "listening_questions": [...],
+            "pronunciation_questions": [...],
+            "audio_stream": StreamingResponse
         }
     """
+    difficulty = score_to_difficulty(score)
+
     try:
-        result = question_gen.generate_question(score)
-        return result
+        # 1️⃣ Generate passage
+        passage = generate_passage(difficulty=difficulty)
+
+        # 2️⃣ Convert passage to audio stream
+        tts = gTTS(text=passage, lang="en")
+        audio_buffer = BytesIO()
+        tts.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+        audio_stream = StreamingResponse(audio_buffer, media_type="audio/mpeg")
+
+        # 3️⃣ Generate listening comprehension questions
+        listening_questions = generate_questions(passage, num_questions=3)
+
+        # 4️⃣ Generate pronunciation questions
+        pronunciation_questions = generate_pronunciation_questions(passage, num_questions=2)
+
+        return {
+            "difficulty": difficulty,
+            "listening_questions": listening_questions,
+            "pronunciation_questions": pronunciation_questions,
+            "audio_stream": audio_stream
+        }
 
     except Exception as e:
-        print("Error generating question:", e)
+        print("Error in agent module:", e)
 
-        # fallback safe response
+        # Fallback safe response
+        fallback_text = "Please repeat the sentence: The sun is bright today."
+        tts = gTTS(text=fallback_text, lang="en")
+        audio_buffer = BytesIO()
+        tts.write_to_fp(audio_buffer)
+        audio_buffer.seek(0)
+        audio_stream = StreamingResponse(audio_buffer, media_type="audio/mpeg")
+
         return {
             "difficulty": "basic",
-            "question": "Please repeat the sentence: The sun is bright today."
+            "listening_questions": [{"difficulty": "basic", "question": fallback_text}],
+            "pronunciation_questions": [{"difficulty": "basic", "question": fallback_text}],
+            "audio_stream": audio_stream
         }

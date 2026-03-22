@@ -1,4 +1,4 @@
-#!C:\Users\fidel\task1\venv\Scripts\python.exe
+#!C:\Users\fidel\Desktop\phenomes_analysis\venv\Scripts\python.exe
 from __future__ import print_function, unicode_literals
 
 import argparse
@@ -105,7 +105,7 @@ class Combination(object):
 
 def read_ipa_bases(ipa_bases):
     segments = []
-    with open(ipa_bases, 'rb') as f:
+    with open(ipa_bases, 'rb',encoding='utf-8') as f:
         dictreader = csv.DictReader(f, encoding='utf=8')
         for record in dictreader:
             form = record['ipa']
@@ -142,7 +142,7 @@ def sort_all_segments(sort_order, all_segments):
 
 
 def write_ipa_all(ipa_bases, ipa_all, all_segments, sort_order):
-    with open(ipa_bases, 'rb') as f:
+    with open(ipa_bases, 'rb',encoding="utf-8") as f:
         reader = csv.reader(f, encoding='utf-8')
         fieldnames = next(reader)
     with open(ipa_all, 'wb') as f:
