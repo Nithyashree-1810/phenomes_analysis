@@ -65,6 +65,7 @@ Format conversion (via FFmpeg + pydub)
 Transcription → scoring → DB storage
 
 📂 Project Structure
+
 phenomes_analysis/
 │
 ├── app/
@@ -102,11 +103,14 @@ phenomes_analysis/
 │   ├── db/
 │   └── qb_agent.py
 │
+│
 ├── alembic/
 ├── main.py
 ├── requirements.txt
 ├── .env
 ├── .gitignore
+
+
 
 📡 API Endpoints
 
