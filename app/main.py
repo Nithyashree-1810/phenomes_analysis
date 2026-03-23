@@ -17,7 +17,7 @@ load_dotenv()
 # ---------- Optional: Force CPU if needed ----------
 os.environ["CUDA_VISIBLE_DEVICES"] = os.getenv("CUDA_VISIBLE_DEVICES", "")
 
-print("CUDA available:", torch.cuda.is_available())
+
 
 # ---------- FastAPI App ----------
 app = FastAPI(
@@ -28,10 +28,10 @@ app = FastAPI(
  
 
 # ---------- Load Whisper Model ----------
-print("Loading Whisper model (medium.en)...")
+
 model = whisper.load_model("medium.en")
 app.state.whisper_model = model
-print("Whisper model loaded successfully.")
+
 
 # ---------- Include Routers ----------
 app.include_router(audio_router)

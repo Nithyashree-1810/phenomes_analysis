@@ -64,7 +64,7 @@ def generate_agent_module(score: float) -> dict:
         }
 
     except Exception as e:
-        print("Error in agent module:", e)
+      
 
         # Fallback safe response
         fallback_text = "Please repeat the sentence: The sun is bright today."

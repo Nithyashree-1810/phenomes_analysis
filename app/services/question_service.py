@@ -12,9 +12,6 @@ from app.prompts.pronounciation_prompt import PRONUNCIATION_PROMPT_TEMPLATE
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def safe_print(text: str):
-    """Print text safely in Windows console."""
-    print(text.encode("utf-8", errors="replace").decode("utf-8"))
 
 def score_to_difficulty(score: float) -> str:
     """Map normalized score 0-100 to difficulty string"""
@@ -45,7 +42,7 @@ def generate_pronunciation_question(score: float, num_questions: int = 1) -> lis
         )
 
         content = response.choices[0].message.content.strip()
-        safe_print(f"RAW MODEL OUTPUT: {repr(content)}")
+        
 
         # Extract JSON safely even if model adds extra text
         match = re.search(r"\[.*\]", content, re.DOTALL)
@@ -53,11 +50,11 @@ def generate_pronunciation_question(score: float, num_questions: int = 1) -> lis
             try:
                 questions = json.loads(match.group())
             except Exception as e:
-                safe_print(f"JSON parse failed: {e}. Using fallback.")
+                
                 questions = [{"difficulty": difficulty,
                               "question": "Please repeat: 'The sun is bright today.'"}]
         else:
-            safe_print("WARNING: No JSON found in model output. Using fallback.")
+            
             questions = [{"difficulty": difficulty,
                           "question": "Please repeat: 'The sun is bright today.'"}]
 
@@ -68,6 +65,6 @@ def generate_pronunciation_question(score: float, num_questions: int = 1) -> lis
         return questions
 
     except Exception as e:
-        safe_print(f"OpenAI question generation error: {e}")
+      
         return [{"difficulty": difficulty,
                  "question": "Please repeat: 'The sun is bright today.'"}]

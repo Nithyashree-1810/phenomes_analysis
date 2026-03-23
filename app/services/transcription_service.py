@@ -14,5 +14,5 @@ def transcribe_audio(file_path: str) -> str:
             )
         return response.text or ""
     except Exception as e:
-        print(f"OpenAI transcription error: {e}")
+       
         return ""
