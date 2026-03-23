@@ -60,7 +60,7 @@ def generate_questions_from_passage(passage: str, num_questions: int = 3):
                 return questions
 
         except Exception as e:
-            print(f"Attempt {attempt+1} failed to generate questions:", e)
+            
             continue
 
     # fallback if all attempts fail
@@ -99,7 +99,7 @@ def generate_listening_module(difficulty: str = "medium", num_questions: int = 3
         }
 
     except Exception as e:
-        print("Listening module error:", e)
+       
         # Fallback if OpenAI fails
         fallback_text = "Please repeat the sentence: The sun is bright today."
         fallback_filename = "fallback_passage.mp3"

@@ -16,7 +16,7 @@ async def get_listening_module():
         result = generate_listening_module()
         return result
     except Exception as e:
-        print("Error generating listening module:", e)
+        
         # Fallback
         fallback_passage = "Please repeat the sentence: The sun is bright today."
         return {

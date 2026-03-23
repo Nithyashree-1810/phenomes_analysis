@@ -19,5 +19,5 @@ def text_to_speech(text: str, filename: str = "generated_passage.mp3") -> str:
         tts.save(str(filepath))
         return f"/static/audio/{filename}"
     except Exception as e:
-        print(f"TTS generation failed: {e}")
+        
         return ""
