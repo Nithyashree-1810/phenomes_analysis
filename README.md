@@ -67,48 +67,41 @@ Transcription → scoring → DB storage
 📂 Project Structure
 
 phenomes_analysis/
-│
 ├── app/
-│   ├── routes/
-│   │   ├── audio_route.py
-│   │   ├── listening_route.py
-│   │   ├── listening_test_route.py
-│   │   └── question_route.py
-│   │
-│   ├── services/
-│   │   ├── agent_service.py
-│   │   ├── audio_service.py
-│   │   ├── client.py
-│   │   ├── phoneme_engine.py
-│   │   ├── question_selector.py
-│   │   ├── question_service.py
-│   │   ├── transcription_service.py
-│   │   └── tts_service.py
-│   │
-│   ├── models/
-│   │   ├── listening_model.py
-│   │   └── pronunciation_result.py
-│   │
-│   ├── repo/
-│   │   └── pronunciation_repo.py
-│   │
-│   ├── prompts/
-│   │   ├── pronunciation_prompt.py
-│   │   └── question_prompt.py
-│   │
-│   ├── data/
-│   │   └── questions.py
-│   │
-│   ├── core/
-│   ├── db/
-│   └── qb_agent.py
-│
+│ ├── core/
+│ ├── data/
+│ │ └── questions.py
+│ ├── db/
+│ ├── models/
+│ │ ├── listening_model.py
+│ │ └── pronunciation_result.py
+│ ├── prompts/
+│ │ ├── pronunciation_prompt.py
+│ │ └── question_prompt.py
+│ ├── repo/
+│ │ └── pronunciation_repo.py
+│ ├── routes/
+│ │ ├── audio_route.py
+│ │ ├── listening_route.py
+│ │ ├── listening_test_route.py
+│ │ └── question_route.py
+│ ├── services/
+│ │ ├── agent_service.py
+│ │ ├── audio_service.py
+│ │ ├── client.py
+│ │ ├── phoneme_engine.py
+│ │ ├── question_selector.py
+│ │ ├── question_service.py
+│ │ ├── transcription_service.py
+│ │ └── tts_service.py
+│ └── qb_agent.py
 │
 ├── alembic/
 ├── main.py
 ├── requirements.txt
-├── .env
 ├── .gitignore
+└── .env
+
 
 
 
