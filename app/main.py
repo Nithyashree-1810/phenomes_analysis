@@ -8,6 +8,8 @@ from app.routes.question_route import router as question_router
 from app.routes.audio_route import router as audio_router
 from app.routes.listening_route import router as listening_router 
 from app.routes.listening_test_route import router as eval_router
+from app.routes.recommendations_route import router as recommendations_router
+from app.routes.pronun_profile_route import router as pronun_profile_router
 from dotenv import load_dotenv
 
 
@@ -37,7 +39,9 @@ app.state.whisper_model = model
 app.include_router(audio_router)
 app.include_router(question_router)
 app.include_router(listening_router) 
-app.include_router(eval_router) # new listening module route
+app.include_router(eval_router)
+app.include_router(recommendations_router)
+app.include_router(pronun_profile_router)
 
 # ---------- Serve Static Audio ----------
 # This allows the frontend to access /static/audio/filename.mp3

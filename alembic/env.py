@@ -4,8 +4,8 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from app.models.listening_model import ListeningAttempt
-from app.models.pronunciation_result import PronunciationResult
+
+from app.models import user, pronunciation_models
 from app.db.base import Base
 
 # this is the Alembic Config object, which provides

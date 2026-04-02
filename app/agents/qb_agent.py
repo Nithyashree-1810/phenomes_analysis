@@ -5,13 +5,14 @@
 from fastapi.responses import StreamingResponse
 from io import BytesIO
 from gtts import gTTS
-from app.services.agent_service import (
-    generate_passage,
-    generate_questions,
-    generate_pronunciation_questions
-)
 
-# Map user score to difficulty
+# Import from dedicated services
+from app.services.listening_service import generate_passage, generate_questions
+from app.services.pronun_questions_service import generate_pronunciation_questions
+
+# -----------------------------
+# Map normalized score to difficulty
+# -----------------------------
 def score_to_difficulty(score: float) -> str:
     if score < 40:
         return "easy"
@@ -21,11 +22,14 @@ def score_to_difficulty(score: float) -> str:
         return "hard"
 
 
+# -----------------------------
+# Main function to generate full module
+# -----------------------------
 def generate_agent_module(score: float) -> dict:
     """
     Generates:
-    - Passage (from OpenAI)
-    - Streaming audio of passage
+    - Passage (from OpenAI via listening_service)
+    - Streaming audio of passage (TTS)
     - Listening comprehension questions
     - Pronunciation questions
 
@@ -64,8 +68,6 @@ def generate_agent_module(score: float) -> dict:
         }
 
     except Exception as e:
-      
-
         # Fallback safe response
         fallback_text = "Please repeat the sentence: The sun is bright today."
         tts = gTTS(text=fallback_text, lang="en")
