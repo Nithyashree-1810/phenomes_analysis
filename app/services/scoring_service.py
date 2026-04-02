@@ -1,0 +1,241 @@
+import json
+import re
+from app.services.client import client
+
+# ============================================================
+# VALID IPA SET
+# ============================================================
+VALID_IPA = {
+    "p","b","t","d","k","g","f","v","θ","ð","s","z","ʃ","ʒ","h",
+    "m","n","ŋ","l","r","j","w",
+    "i","ɪ","e","ɛ","æ","ɑ","ɔ","oʊ","u","ʊ","ə","ʌ","aɪ","aʊ","ɔɪ",
+    "tʃ","dʒ","ɾ"
+}
+
+# ============================================================
+# CLEANER FOR PHONEME DETAILS
+# ============================================================
+def clean_phonemes(phoneme_details):
+    """
+    Removes invalid IPA symbols (ˈ, ˌ, spaces, unknown tokens).
+    Ensures DB gets only valid phonemes.
+    """
+    cleaned = []
+
+    for item in phoneme_details:
+        ph = item.get("phoneme", "").strip()
+
+        if not ph:
+            continue
+
+        if ph in ("ˈ", "ˌ"):
+            continue
+
+        if ph == " ":
+            continue
+
+        if ph not in VALID_IPA:
+            continue
+
+        cleaned.append(item)
+
+    return cleaned
+
+
+# -------------------------------
+# IPA helpers
+# -------------------------------
+def gpt_extract_ipa(text: str) -> str:
+    prompt = f"""
+Convert the following English text to IPA only.
+Rules:
+- Output ONLY IPA.
+- No brackets or slashes.
+- No explanation.
+TEXT:
+{text}
+"""
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=200,
+            temperature=0.0
+        )
+        ipa = res.choices[0].message.content.strip()
+        ipa = re.sub(r"[/\[\]]", "", ipa)
+        return ipa
+    except:
+        return ""
+
+
+def normalize_ipa(ipa: str) -> str:
+    if not ipa:
+        return ""
+    ipa = ipa.lower()
+    ipa = re.sub(r"[^a-zɑ-ɒɔəɜɪʊʌæθðŋʃʒɹɾʔːˑˈˌ ]+", "", ipa)
+    return ipa
+
+
+def split_ipa(ipa: str):
+    digraphs = ["tʃ", "dʒ", "aɪ", "ɔɪ", "eɪ", "oʊ"]
+    tokens = []
+    i = 0
+    while i < len(ipa):
+        if i + 1 < len(ipa) and ipa[i:i+2] in digraphs:
+            tokens.append(ipa[i:i+2])
+            i += 2
+        else:
+            tokens.append(ipa[i])
+            i += 1
+    return tokens
+
+
+def levenshtein(a: str, b: str) -> int:
+    if len(a) < len(b):
+        a, b = b, a
+    if len(b) == 0:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        curr = [i]
+        for j, cb in enumerate(b, 1):
+            cost = 0 if ca == cb else 1
+            curr.append(min(prev[j] + 1, curr[j-1] + 1, prev[j-1] + cost))
+        prev = curr
+    return prev[-1]
+
+
+# -------------------------------
+# Fluency scoring
+# -------------------------------
+def compute_fluency(transcript: str) -> float:
+    if not transcript:
+        return 0.0
+    penalties = sum(transcript.lower().count(f) for f in ["um", "uh", "erm", "like", "...", "--"])
+    score = 1.0 - min(0.5, penalties * 0.1)
+    return round(score, 3)
+
+
+# -------------------------------
+# Mistakes & tips
+# -------------------------------
+def gpt_extract_mistakes(reference: str, transcript: str):
+    prompt = f"""
+Compare the reference sentence and the spoken transcript.
+REFERENCE:
+{reference}
+TRANSCRIPT:
+{transcript}
+Return ONLY a JSON array named "mistakes" with:
+{{"expected":"<word>","spoken":"<word>","type":"missing|wrong|extra"}}
+"""
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            temperature=0.0
+        )
+        match = re.search(r"\[.*\]", res.choices[0].message.content.strip(), re.DOTALL)
+        return json.loads(match.group(0)) if match else []
+    except:
+        return []
+
+
+def gpt_generate_tips(reference_text, transcript, mistakes):
+    prompt = f"""
+The user read a sentence aloud and made the following pronunciation mistakes:
+REFERENCE: {reference_text}
+TRANSCRIPT: {transcript}
+MISTAKES: {json.dumps(mistakes, indent=2)}
+Give 2-3 actionable pronunciation tips ONLY targeting these mistakes.
+Return ONLY a JSON list of strings.
+"""
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+            max_tokens=120
+        )
+        match = re.search(r"\[.*\]", res.choices[0].message.content.strip(), re.DOTALL)
+        return json.loads(match.group(0)) if match else ["Focus on the mispronounced words."]
+    except:
+        return ["Focus on the mispronounced words."]
+
+
+# ============================================================
+# MAIN PRONUNCIATION SCORING
+# ============================================================
+def compute_pronunciation_scores(reference_text: str, transcript: str):
+    ref_ipa = normalize_ipa(gpt_extract_ipa(reference_text))
+    user_ipa = normalize_ipa(gpt_extract_ipa(transcript))
+
+    phoneme_details = []
+    strong_phonemes = []
+    weak_phonemes = []
+
+    if ref_ipa and user_ipa:
+        ref_tokens = split_ipa(ref_ipa)
+        user_tokens = split_ipa(user_ipa)
+
+        min_len = min(len(ref_tokens), len(user_tokens))
+
+        for i in range(min_len):
+            r = ref_tokens[i]
+            u = user_tokens[i]
+
+            total_attempts = 1
+            correct = (r == u)
+            accuracy = 100 if correct else 0
+
+            phoneme_details.append({
+                "phoneme": r,
+                "total_attempts": 1,
+                "correct_attempts": 1 if correct else 0,
+                "accuracy": accuracy
+            })
+
+            if accuracy >= 70:
+                strong_phonemes.append({"phoneme": r})
+            if accuracy < 50:
+                weak_phonemes.append({"phoneme": r})
+
+    # -------------------------------
+    # CLEAN INVALID PHONEMES
+    # -------------------------------
+    phoneme_details = clean_phonemes(phoneme_details)
+    strong_phonemes = clean_phonemes(strong_phonemes)
+    weak_phonemes = clean_phonemes(weak_phonemes)
+
+    # -------------------------------
+    # SCORE CALCULATIONS
+    # -------------------------------
+    if not ref_ipa or not user_ipa:
+        phoneme_score = 0
+    else:
+        dist = levenshtein(ref_ipa, user_ipa)
+        max_len = max(len(ref_ipa), len(user_ipa))
+        phoneme_score = round(max(1 - dist / max_len, 0) * 100)
+
+    fluency_score = compute_fluency(transcript)
+    mistakes = gpt_extract_mistakes(reference_text, transcript)
+    tips = gpt_generate_tips(reference_text, transcript, mistakes) if mistakes else ["Great job!"]
+
+    overall_score = round(phoneme_score * 0.7 + fluency_score * 100 * 0.3, 2)
+
+    return {
+        "reference_text": reference_text,
+        "transcript": transcript,
+        "ref_ipa": ref_ipa,
+        "user_ipa": user_ipa,
+        "phoneme_score": phoneme_score,
+        "fluency_score": fluency_score,
+        "overall_score": overall_score,
+        "mistakes": mistakes,
+        "tips": tips,
+        "phoneme_details": phoneme_details,
+        "strong_phonemes": strong_phonemes,
+        "weak_phonemes": weak_phonemes
+    }
