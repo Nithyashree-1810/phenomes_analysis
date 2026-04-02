@@ -4,7 +4,7 @@ from app.services.client import client
 def transcribe_audio(file_path: str) -> str:
     """
     Transcribe audio using OpenAI's gpt-4o-transcribe model.
-    Returns the transcript as a string.
+    Returns the transcript as a clean string.
     """
     try:
         with open(file_path, "rb") as f:
@@ -12,7 +12,20 @@ def transcribe_audio(file_path: str) -> str:
                 model="gpt-4o-transcribe",
                 file=f
             )
-        return response.text or ""
+
+        # Safely extract text
+        text = (
+            getattr(response, "text", None)
+            or response.get("text")
+            or response.get("transcript")
+            or ""
+        )
+
+        # Normalize
+        if text:
+            text = text.strip().replace("\n", " ").replace("  ", " ")
+
+        return text
+
     except Exception as e:
-       
         return ""
