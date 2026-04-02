@@ -1,0 +1,5 @@
+.env
+static
+temp
+pycache
+venv
