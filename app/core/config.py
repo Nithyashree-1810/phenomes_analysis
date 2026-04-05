@@ -1,16 +1,41 @@
-from pydantic_settings import BaseSettings
+"""
+app/core/config.py
+Centralised application settings loaded from environment / .env file.
+All other modules import from here — never call os.getenv() directly.
+"""
 from pathlib import Path
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
+from pydantic import Field
 
-# Load .env
-env_path = Path(__file__).parent.parent / ".env"
-load_dotenv(dotenv_path=env_path)
 
 class Settings(BaseSettings):
+    # ── Database ────────────────────────────────────────────────────────────
     DATABASE_URL: str
 
+    # ── OpenAI ──────────────────────────────────────────────────────────────
+    OPENAI_API_KEY: str
+
+    # ── LangSmith ───────────────────────────────────────────────────────────
+    LANGCHAIN_TRACING_V2: bool = False
+    LANGCHAIN_ENDPOINT: str = "https://api.smith.langchain.com"
+    LANGCHAIN_API_KEY: str = ""
+    LANGCHAIN_PROJECT: str = "phenome_analysis_agent"
+
+    # ── App ─────────────────────────────────────────────────────────────────
+    ENVIRONMENT: str = "development"
+    LOG_LEVEL: str = "INFO"
+
+    # ── Audio ───────────────────────────────────────────────────────────────
+    STATIC_AUDIO_DIR: str = "app/static/audio"
+    TEMP_DIR: str = "temp"
+
+    # ── Whisper ─────────────────────────────────────────────────────────────
+    WHISPER_MODEL: str = "medium.en"
+
     class Config:
-        env_file = str(env_path)
+        env_file = str(Path(__file__).parent.parent.parent / ".env")
         env_file_encoding = "utf-8"
+        extra = "ignore"
+
 
 settings = Settings()

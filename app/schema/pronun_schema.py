@@ -1,6 +1,9 @@
+
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel
+from uuid import UUID
+
+from pydantic import BaseModel, Field
 
 
 class PhonemeStat(BaseModel):
@@ -8,18 +11,18 @@ class PhonemeStat(BaseModel):
     accuracy: float
     total_attempts: int
     correct_attempts: int
-    last_attempted_at: Optional[datetime]
+    last_attempted_at: Optional[datetime] = None
 
 
 class WeakPhoneme(BaseModel):
     phoneme: str
-    error_rate: float
+    error_rate: float = Field(..., ge=0.0, le=1.0)
     example_word: Optional[str] = None
 
 
 class StrongPhoneme(BaseModel):
     phoneme: str
-    accuracy: float
+    accuracy: float = Field(..., ge=0.0, le=1.0)
 
 
 class LevelProgress(BaseModel):
@@ -30,7 +33,7 @@ class LevelProgress(BaseModel):
 
 
 class UserPronunciationProfileOut(BaseModel):
-    user_id: int   # ← UPDATED (was UUID)
+    user_id: UUID                          # int → UUID
     current_level: str
     overall_score_avg: float
     exercises_completed: int
@@ -38,11 +41,38 @@ class UserPronunciationProfileOut(BaseModel):
     weak_phonemes: List[WeakPhoneme]
     strong_phonemes: List[StrongPhoneme]
     level_progress: LevelProgress
-    last_practice: Optional[datetime]
+    last_practice: Optional[datetime] = None
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}
+
+
+class PhonemeDetailOut(BaseModel):
+    phoneme: str
+    total_attempts: int
+    correct_attempts: int
+    accuracy: float
+
+
+class MistakeOut(BaseModel):
+    expected: str
+    spoken: str
+    type: str  # "missing" | "wrong" | "extra"
+
+
+class AnalyzeAudioOut(BaseModel):
+    request_id: UUID                       # str → UUID
+    user_id: UUID                          # int → UUID
+    reference_text: str
+    transcript: str
+    ref_ipa: str
+    user_ipa: str
+    phoneme_score: float
+    fluency_score: float
+    overall_score: float
+    weak_phonemes: List[WeakPhoneme]
+    strong_phonemes: List[StrongPhoneme]
+    mistakes: List[MistakeOut]
+    tips: List[str]
 
 
 class RecommendationSentence(BaseModel):
@@ -59,3 +89,24 @@ class PronunciationRecommendationOut(BaseModel):
     focus_areas: List[RecommendationItem]
     suggested_practice_time_mins: int
     next_milestone: str
+
+
+class ListeningModuleOut(BaseModel):
+    session_id: UUID                       # str → UUID
+    passage: str
+    audio_url: str
+    listening_questions: List[dict]
+
+
+class ListeningEvalOut(BaseModel):
+    session_id: UUID                       # str → UUID
+    expected_answer: str
+    user_transcript: str
+    relevance: float
+    correctness: float
+    feedback: str
+
+
+class QuestionOut(BaseModel):
+    difficulty: str
+    question_text: str

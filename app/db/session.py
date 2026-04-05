@@ -1,28 +1,27 @@
-# db/session.py
+"""
+app/db/session.py
+SQLAlchemy engine + session factory.
+Uses a context-manager dependency so every request gets a clean session
+that is always closed, even on errors.
+"""
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-import os
-from dotenv import load_dotenv
-#from app.models.prounciation_result import PronunciationResult
+from sqlalchemy.orm import sessionmaker, Session
+from typing import Generator
 
-# Load environment variables from .env
-load_dotenv()  
+from app.core.config import settings
 
+engine = create_engine(
+    settings.DATABASE_URL,
+    pool_pre_ping=True,      # detect stale connections
+    pool_size=10,
+    max_overflow=20,
+)
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL not set in environment")
-
-# Create SQLAlchemy engine
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-
-# Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Dependency for FastAPI routes
-def get_db():
+
+def get_db() -> Generator[Session, None, None]:
+    """FastAPI dependency that yields a DB session."""
     db = SessionLocal()
     try:
         yield db
