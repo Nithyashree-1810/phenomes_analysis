@@ -63,7 +63,11 @@ app = FastAPI(
 # ── Routers ──────────────────────────────────────────────────────────────────
 app.include_router(audio_router)
 app.include_router(question_router)
+<<<<<<< HEAD
 app.include_router(listening_router)
+=======
+app.include_router(listening_router) 
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 app.include_router(eval_router)
 app.include_router(recommendations_router)
 app.include_router(pronun_profile_router)

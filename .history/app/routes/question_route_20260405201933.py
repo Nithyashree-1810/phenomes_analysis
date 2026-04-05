@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+<<<<<<< HEAD
 from app.db.session import get_db
 from app.repo.pronunciation_repo import get_or_create_profile
 from app.schema.pronun_schema import QuestionOut
@@ -32,6 +33,15 @@ def get_next_question(
     # Save as reference text for /test/analyze
     profile.current_question = q.get("question", _FALLBACK["question"])
     db.commit()
+=======
+@router.get("/next")
+def get_next_question_route(score: float = Query(..., ge=0, le=100)):
+    """
+    Generate next pronunciation question dynamically based on user score.
+    """
+    questions = service.generate_questions(score, num_questions=1)
+    question = questions[0] if questions else {"difficulty": "easy", "question": "Practice reading aloud."}
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 
     return {
         "difficulty": q.get("difficulty", "easy"),

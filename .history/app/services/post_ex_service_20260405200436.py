@@ -61,6 +61,7 @@ def recompute_weak_strong_and_score(
     for p in phonemes:
         acc = float(p.accuracy_pct or 0)
         scores.append(acc)
+<<<<<<< HEAD
         if acc < 50:
             weak.append({"phoneme": p.phoneme, "error_rate": round((100 - acc) / 100, 3)})
         elif acc >= 70:
@@ -112,3 +113,47 @@ def post_exercise_hook(
         db.rollback()
         logger.exception("post_exercise_hook failed for user_id=%s: %s", user_id, exc)
         return {"status": "error", "message": str(exc)}
+=======
+
+        if acc < 50:
+            weak.append({
+                "phoneme": p.phoneme,
+                "error_rate": float(f"{100 - acc:.2f}")
+            })
+        elif acc >= 70:
+            strong.append({
+                "phoneme": p.phoneme,
+                "accuracy": float(f"{acc:.2f}")
+            })
+
+    profile.weak_phonemes = weak
+    profile.strong_phonemes = strong
+    profile.overall_score_avg = sum(scores) / len(scores) if scores else 0
+    profile.last_practice_at = datetime.utcnow()
+
+
+# ---------------------------------------------------
+# Main Post-Exercise Hook
+# ---------------------------------------------------
+def post_exercise_hook(db: Session, user_id: int, phoneme_results: list, time_spent_secs: int):
+    profile = db.query(UserPronunciationProfile).filter_by(user_id=user_id).first()
+    if not profile:
+        return {"status": "error", "message": "Profile not found"}
+
+    # Update phonemes safely via UPSERT
+    update_phoneme_stats(db, user_id, phoneme_results)
+
+    # Update summary counters
+    profile.exercises_completed += 1
+    profile.time_spent_total_secs += time_spent_secs
+
+    # Recompute weak/strong and scores
+    recompute_weak_strong_and_score(db, profile)
+
+    # Update level
+    update_level_progress(profile)
+
+    db.commit()
+
+    return {"status": "success"}
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f

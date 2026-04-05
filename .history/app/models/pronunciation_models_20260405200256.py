@@ -43,17 +43,28 @@ class UserPronunciationProfile(Base):
         "PhonemePerformance",
         back_populates="profile",
         cascade="all, delete-orphan",
+<<<<<<< HEAD
         primaryjoin="UserPronunciationProfile.user_id == PhonemePerformance.user_id",
         foreign_keys="[PhonemePerformance.user_id]",
     )
 
 
+=======
+        primaryjoin="UserPronunciationProfile.user_id==PhonemePerformance.user_id"
+    )
+
+
+# ---------------------------------------
+# Phoneme Performance
+# ---------------------------------------
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 class PhonemePerformance(Base):
     __tablename__ = "phoneme_performance"
     __table_args__ = (
         UniqueConstraint("user_id", "phoneme", name="uq_user_phoneme"),
     )
 
+<<<<<<< HEAD
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     user_id = Column(
@@ -72,10 +83,30 @@ class PhonemePerformance(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+=======
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    # FK → references the INTEGER column user_pronunciation_profile.user_id
+    user_id = Column(
+        Integer,
+        ForeignKey("user_pronunciation_profile.user_id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    phoneme = Column(String(50), nullable=False)
+    total_attempts = Column(Integer, default=0)
+    correct_attempts = Column(Integer, default=0)
+    accuracy_pct = Column(Numeric(5, 2), default=0)
+    last_attempted_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 
     profile = relationship(
         "UserPronunciationProfile",
         back_populates="phoneme_stats",
+<<<<<<< HEAD
         primaryjoin="PhonemePerformance.user_id == UserPronunciationProfile.user_id",
         foreign_keys="[PhonemePerformance.user_id]",
+=======
+        primaryjoin="PhonemePerformance.user_id==UserPronunciationProfile.user_id"
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     )

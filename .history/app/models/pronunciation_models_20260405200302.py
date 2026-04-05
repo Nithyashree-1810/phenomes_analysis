@@ -76,6 +76,10 @@ class PhonemePerformance(Base):
     profile = relationship(
         "UserPronunciationProfile",
         back_populates="phoneme_stats",
+<<<<<<< HEAD
         primaryjoin="PhonemePerformance.user_id == UserPronunciationProfile.user_id",
         foreign_keys="[PhonemePerformance.user_id]",
+=======
+        primaryjoin="PhonemePerformance.user_id==UserPronunciationProfile.user_id"
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     )
