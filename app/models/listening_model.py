@@ -1,17 +1,23 @@
-# app/models/listening_models.py
+
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
+
 from app.db.base import Base
-from sqlalchemy.dialects.postgresql import JSON
-from datetime import datetime
 
-class ListeningAttempt(Base):
-    __tablename__ = "listening_attempts"
 
-    id = Column(Integer, primary_key=True, index=True)
+class ListeningSession(Base):
+    __tablename__ = "listening_sessions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(36), nullable=False, index=True)   # UUID string
     passage = Column(Text, nullable=False)
-    questions = Column(JSON)
-    user_transcript = Column(Text, nullable=False)
-    similarity_score = Column(Float, nullable=False)
-    audio_filename = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    questions = Column(JSONB)
+    user_transcript = Column(Text, nullable=True)
+    similarity_score = Column(Float, nullable=True)
+    audio_filename = Column(String,nullable=True)
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )

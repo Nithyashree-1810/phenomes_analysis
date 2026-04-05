@@ -1,116 +1,122 @@
-# app/routes/listening_audio_eval_route.py
-
-from fastapi import APIRouter, UploadFile, Form, Depends, Request
-from fastapi.responses import JSONResponse
-import os
-from sqlalchemy.orm import Session
-from openai import OpenAI
 import json
+import logging
+import uuid
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.models.listening_model import ListeningAttempt
+from app.models.listening_model import ListeningSession
+from app.services.listening_service import evaluate_answers_batch
+from app.services.transcription_service import transcribe_audio
+from app.core.config import settings
 
-router = APIRouter(prefix="/listening", tags=["Listening Evaluation"])
-
-client = OpenAI()
-
-def get_whisper_model(request: Request):
-    return request.app.state.whisper_model
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/listening", tags=["Listening"])
 
 
-# ---------------------------------------------
-# LLM-BASED SEMANTIC EVALUATION (GPT-4o-mini)
-# ---------------------------------------------
-def evaluate_semantic_score(expected: str, transcript: str):
-    prompt = f"""
-You are evaluating a student's LISTENING COMPREHENSION.
-
-PASSAGE / EXPECTED ANSWER:
-\"\"\"{expected}\"\"\"
-
-USER'S TRANSCRIBED ANSWER:
-\"\"\"{transcript}\"\"\"
-
-Evaluate ONLY comprehension accuracy.
-
-Return STRICT JSON in this format:
-{{
-  "relevance": <0-100>,
-  "correctness": <0-100>,
-  "feedback": "<short explanation>"
-}}
-"""
-
-    resp = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
+@router.post("/evaluate", summary="Evaluate all 3 spoken answers for a listening session")
+async def evaluate_listening_answers(
+    session_id: str = Form(..., description="session_id from /module response"),
+    audio_1: UploadFile = File(...),
+    audio_2: UploadFile = File(...),
+    audio_3: UploadFile = File(...),
+    db: Session = Depends(get_db),
+):
+    # ── 1. Fetch session from DB ──────────────────────────────────────────────
+    session = (
+        db.query(ListeningSession)
+        .filter(ListeningSession.session_id == session_id)
+        .first()
     )
+    if not session:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found. Call GET /listening/module first.",
+        )
 
-    # Safe JSON parsing
+    passage = session.passage
+    questions = session.questions  # list of {id, question, difficulty}
+
+    if not questions or len(questions) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Session has {len(questions or [])} questions, expected 3.",
+        )
+
+    temp_dir = Path(settings.TEMP_DIR)
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    temp_files = []
+
     try:
-        data = json.loads(resp.choices[0].message.content)
-        return data
-    except Exception:
+        # ── 2. Transcribe all 3 audio files ───────────────────────────────────
+        audio_files = [audio_1, audio_2, audio_3]
+        answers = []
+
+        for i, audio_file in enumerate(audio_files):
+            q = questions[i]
+            suffix = Path(audio_file.filename or "audio.bin").suffix or ".bin"
+            temp_path = temp_dir / f"{session_id}_q{i+1}{suffix}"
+            temp_files.append(temp_path)
+
+            temp_path.write_bytes(await audio_file.read())
+            transcript = transcribe_audio(temp_path)
+
+            if not transcript:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Transcription failed for question {i+1}. Check audio quality.",
+                )
+
+            logger.info("Q%d transcript: %s", i + 1, transcript[:80])
+            answers.append({
+                "question_id": q["id"],
+                "question": q["question"],
+                "answer": transcript,
+            })
+
+        # ── 3. Batch evaluate in one LLM call ─────────────────────────────────
+        results = evaluate_answers_batch(passage=passage, answers=answers)
+        total_score = round(
+            sum(r.get("score", 0) for r in results) / len(results), 2
+        )
+
+        # ── 4. Update session in DB ───────────────────────────────────────────
+        session.user_transcript = json.dumps([a["answer"] for a in answers])
+        session.similarity_score = total_score
+        db.commit()
+
         return {
-            "relevance": 0,
-            "correctness": 0,
-            "feedback": "Model returned invalid JSON"
+            "session_id": session_id,
+            "total_score": total_score,
+            "results": [
+                {
+                    "question_id": r.get("question_id"),
+                    "question": answers[i]["question"],
+                    "transcript": answers[i]["answer"],
+                    "correct": r.get("correct", False),
+                    "score": r.get("score", 0),
+                    "feedback": r.get("feedback", ""),
+                }
+                for i, r in enumerate(results)
+            ],
         }
 
-
-# ---------------------------------------------
-# MAIN LISTENING AUDIO EVALUATION ROUTE
-# ---------------------------------------------
-@router.post("/submit-audio")
-async def evaluate_listening_audio(
-    question_text: str = Form(...),
-    file: UploadFile = None,
-    model = Depends(get_whisper_model),
-    db: Session = Depends(get_db)
-):
-    if file is None:
-        return JSONResponse({"error": "No audio file uploaded"}, status_code=400)
-
-    # Save temporarily
-    temp_path = f"temp_{file.filename}"
-    audio_filename = f"user_{file.filename}"
-
-    with open(temp_path, "wb") as f:
-        f.write(await file.read())
-
-    # Whisper transcription
-    result = model.transcribe(temp_path)
-    user_transcript = result["text"].strip()
-
-    expected_text = question_text.strip()
-
-    # LLM scoring
-    semantic = evaluate_semantic_score(expected_text, user_transcript)
-
-    # Store in DB
-    attempt = ListeningAttempt(
-        passage=expected_text,
-        questions=[{"question": expected_text}],
-        user_transcript=user_transcript,
-        similarity_score=semantic["correctness"],  # store correctness
-        audio_filename=audio_filename,
-    )
-
-    db.add(attempt)
-    db.commit()
-    db.refresh(attempt)
-
-    # Delete temp file
-    try:
-        os.remove(temp_path)
-    except:
-        pass
-
-    # Response
-    return {
-        "expected_answer": expected_text,
-        "user_transcript": user_transcript,
-        "relevance": semantic["relevance"],
-        "correctness": semantic["correctness"],
-        "feedback": semantic["feedback"]
-    }
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as exc:
+        db.rollback()
+        logger.exception("evaluate_listening_answers failed: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Evaluation failed: {exc}",
+        )
+    finally:
+        for path in temp_files:
+            if path.exists():
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
