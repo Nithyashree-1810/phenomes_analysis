@@ -1,34 +1,67 @@
-# db/repo.py
 from sqlalchemy.orm import Session
-from app.models.pronunciation_result import PronunciationResult
+from app.models.pronunciation_models import UserPronunciationProfile
+from datetime import datetime
 
-def save_pronunciation_result(db: Session, data: dict):
-    """
-    Save a new pronunciation result in the DB
-    """
-    result = PronunciationResult(
-        user_id=data.get("user_id"),
-        reference_text=data["reference_text"],
-        transcript=data["transcript"],
-        pronunciation_score=data["pronunciation_score"],
-        total_mistakes=data.get("total_mistakes", 0),
-        mistakes=data.get("mistakes"),
-        improvement_tips=data.get("improvement_tips"),
-        audio_path=data.get("audio_path")
+
+def get_profile(db: Session, user_id: int):
+    return (
+        db.query(UserPronunciationProfile)
+        .filter(UserPronunciationProfile.user_id == user_id)
+        .first()
     )
-    db.add(result)
+
+
+def create_profile(db: Session, user_id: int):
+    profile = UserPronunciationProfile(
+        user_id=user_id,
+        current_level="basic",
+        overall_score_avg=0,
+        exercises_completed=0,
+        time_spent_total_secs=0,
+        weak_phonemes=[],
+        strong_phonemes=[],
+        level_progress={},
+        last_practice_at=datetime.utcnow(),
+    )
+
+    db.add(profile)
     db.commit()
-    db.refresh(result)
-    return result
+    db.refresh(profile)
+    return profile
 
-def get_user_results(db: Session, user_id: int):
-    """
-    Retrieve all pronunciation results for a user
-    """
-    return db.query(PronunciationResult).filter(PronunciationResult.user_id == user_id).all()
 
-def get_latest_result(db: Session, user_id: int):
-    """
-    Retrieve the latest pronunciation result for a user
-    """
-    return db.query(PronunciationResult).filter(PronunciationResult.user_id == user_id).order_by(PronunciationResult.created_at.desc()).first()
+def update_profile(
+    db: Session,
+    profile: UserPronunciationProfile,
+    score: float,
+    time_spent_secs: int = 0,
+    current_level: str | None = None,
+    strong_phonemes: list[str] | None = None,
+    weak_phonemes: list[str] | None = None,
+):
+
+    profile.exercises_completed += 1
+    profile.time_spent_total_secs += time_spent_secs
+    profile.last_practice_at = datetime.utcnow()
+
+    # safe averaging
+    if profile.overall_score_avg and float(profile.overall_score_avg) > 0:
+        profile.overall_score_avg = (
+            float(profile.overall_score_avg) + score
+        ) / 2
+    else:
+        profile.overall_score_avg = score
+
+    if current_level:
+        profile.current_level = current_level
+
+    # NEW: update phonemes
+    if strong_phonemes is not None:
+        profile.strong_phonemes = strong_phonemes
+
+    if weak_phonemes is not None:
+        profile.weak_phonemes = weak_phonemes
+
+    db.commit()
+    db.refresh(profile)
+    return profile
