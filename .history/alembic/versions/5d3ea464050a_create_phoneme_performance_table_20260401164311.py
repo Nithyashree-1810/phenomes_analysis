@@ -1,8 +1,16 @@
+<<<<<<<< HEAD:.history/alembic/versions/5d3ea464050a_create_phoneme_performance_table_20260401164311.py
 """create phoneme_performance table
 
 Revision ID: 5d3ea464050a
 Revises: 8f7f946a9a59
 Create Date: 2026-04-01 16:43:12.519520
+========
+"""create pronunciation_result table
+
+Revision ID: 23619ff2e486
+Revises: 5d3ea464050a
+Create Date: 2026-04-01 18:47:57.951756
+>>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f:.history/alembic/versions/23619ff2e486_create_pronunciation_result_table_20260401184756.py
 
 """
 from typing import Sequence, Union
@@ -12,8 +20,13 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
+<<<<<<<< HEAD:.history/alembic/versions/5d3ea464050a_create_phoneme_performance_table_20260401164311.py
 revision: str = '5d3ea464050a'
 down_revision: Union[str, Sequence[str], None] = '8f7f946a9a59'
+========
+revision: str = '23619ff2e486'
+down_revision: Union[str, Sequence[str], None] = '5d3ea464050a'
+>>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f:.history/alembic/versions/23619ff2e486_create_pronunciation_result_table_20260401184756.py
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

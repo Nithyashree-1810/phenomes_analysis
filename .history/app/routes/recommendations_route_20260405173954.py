@@ -124,81 +124,127 @@ SENTENCE_BANK: dict[str, list[dict]] = {
     "k": [
         {"sentence": "Keep the cat in the kitchen.", "difficulty": "basic"},
         {"sentence": "The colorful kite caught the cool breeze quickly.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The technical committee acknowledged the complex and critical conflict.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "g": [
         {"sentence": "Get the big green bag.", "difficulty": "basic"},
         {"sentence": "The goat grabbed the green grass near the garden gate.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The geologist suggested the biggest geological discovery of the decade.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "v": [
         {"sentence": "Vivian loves to visit every valley.", "difficulty": "basic"},
         {"sentence": "The driver moved the vehicle over the curved road.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The investigator revealed the involvement of several individuals.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "h": [
         {"sentence": "He held his hat in his hand.", "difficulty": "basic"},
         {"sentence": "The happy hiker headed home through the hills.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The historian highlighted the heroic achievements of the inhabitants.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "j": [
         {"sentence": "Yes you can use your yellow yacht.", "difficulty": "basic"},
         {"sentence": "The young student yearned for years to play.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The youthful musician yearned to yield beautiful and unique melodies.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "ʃ": [
         {"sentence": "She sells shells at the shore.", "difficulty": "basic"},
         {"sentence": "The sharp shadow showed the shape of the shed.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The official established a special commission to finish the research.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "tʃ": [
         {"sentence": "Charles chose to eat peach and cheese.", "difficulty": "basic"},
         {"sentence": "The teacher challenged each child to reach their potential.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The architect sketched each arch and notched each structural breach.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "ʒ": [
         {"sentence": "It was a usual pleasure.", "difficulty": "basic"},
         {"sentence": "The beige garage had a casual and leisurely atmosphere.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The prestigious vision brought a measure of exposure to the regime.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "aɪ": [
         {"sentence": "I like to fly kites at night.", "difficulty": "basic"},
         {"sentence": "The bright light guided my eyes through the wide sky.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The scientist tried to identify the precise climate inside the island.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "aʊ": [
         {"sentence": "How now brown cow.", "difficulty": "basic"},
         {"sentence": "The loud crowd gathered around the south mountain town.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The renowned accountant announced the astounding amount aloud.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "ʌ": [
         {"sentence": "The sun comes up above the mud.", "difficulty": "basic"},
         {"sentence": "The young monk studied until the summer was done.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The sudden thunder disrupted the wonderful discussion among us.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "ʊ": [
         {"sentence": "Look at the good book.", "difficulty": "basic"},
         {"sentence": "The woman stood by the wooden foot of the brook.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The cook mistook the sugar for flour and could not undo it.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "u": [
         {"sentence": "Move the blue shoe to the room.", "difficulty": "basic"},
         {"sentence": "The smooth music from the flute flew through the school.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The nutritious fruit improved the mood of the youth group.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "ɛ": [
         {"sentence": "Get the red pen off the desk.", "difficulty": "basic"},
         {"sentence": "The healthy men meant to measure the length carefully.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The expert expressed concern about the extent of the debt.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "ɑ": [
         {"sentence": "The father watched the calm dark water.", "difficulty": "basic"},
         {"sentence": "The honest artist carved a large marble heart.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The calm architect designed a large landmark for the harbour.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
     "ɔ": [
         {"sentence": "The dog walked along the long hall.", "difficulty": "basic"},
         {"sentence": "The author often talked about the awesome autumn fog.", "difficulty": "intermediate"},
+<<<<<<< HEAD
         {"sentence": "The lawyer thought the law brought more order to the audience.", "difficulty": "advanced"},
     ],
     # ── Added missing phonemes ─────────────────────────────────────────────
@@ -211,10 +257,13 @@ SENTENCE_BANK: dict[str, list[dict]] = {
         {"sentence": "The butter was better this time.", "difficulty": "basic"},
         {"sentence": "The writer had a better attitude toward the matter.", "difficulty": "intermediate"},
         {"sentence": "The bitter winter weather battered the outer shelter repeatedly.", "difficulty": "advanced"},
+=======
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     ],
 }
 
 
+<<<<<<< HEAD
 def _compute_next_milestone(profile: UserPronunciationProfile) -> str:
     lp = profile.level_progress or {}
     exercises_at_level = int(lp.get("exercises_at_level", 0))
@@ -288,3 +337,302 @@ def get_pronunciation_recommendations(user_id: uuid.UUID, db: Session = Depends(
 
 
 
+"""import logging
+import uuid
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.models.pronunciation_models import UserPronunciationProfile, PhonemePerformance
+from app.services.leveling_service import LEVEL_REQUIREMENTS
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/api/v1/pronunciation", tags=["Pronunciation"])
+
+# ── Practice sentence bank ────────────────────────────────────────────────────
+SENTENCE_BANK: dict[str, list[dict]] = {
+    "θ": [
+        {"sentence": "Think about the thing.", "difficulty": "basic"},
+        {"sentence": "Three thousand thoughts.", "difficulty": "intermediate"},
+    ],
+    "ð": [
+        {"sentence": "This is the day that they arrived.", "difficulty": "basic"},
+        {"sentence": "Those weathered clothes are theirs.", "difficulty": "intermediate"},
+    ],
+    "ə": [
+        {"sentence": "The problem was about a banana.", "difficulty": "basic"},
+        {"sentence": "A collection of unusual animals.", "difficulty": "intermediate"},
+    ],
+    "f": [
+        {"sentence": "Five frogs fled from the fog.", "difficulty": "basic"},
+        {"sentence": "The effort to perfect the draft was effective.", "difficulty": "intermediate"},
+    ],
+    "m": [
+        {"sentence": "Make my mother some lemon jam.", "difficulty": "basic"},
+        {"sentence": "The minimum amount was met immediately.", "difficulty": "intermediate"},
+    ],
+    "l": [
+        {"sentence": "Lucy likes light blue balloons.", "difficulty": "basic"},
+        {"sentence": "The tall fellow left the village slowly.", "difficulty": "intermediate"},
+    ],
+    "i": [
+        {"sentence": "She sees three green trees.", "difficulty": "basic"},
+        {"sentence": "He believes the team will achieve the lead.", "difficulty": "intermediate"},
+    ],
+    "oʊ": [
+        {"sentence": "Go home and open the old stove.", "difficulty": "basic"},
+        {"sentence": "The cold stone road goes below the slope.", "difficulty": "intermediate"},
+    ],
+    "d": [
+        {"sentence": "Dad did a good deed today.", "difficulty": "basic"},
+        {"sentence": "David decided to add the details to the document.", "difficulty": "intermediate"},
+    ],
+    "z": [
+        {"sentence": "Zoe sees zebras at the zoo.", "difficulty": "basic"},
+        {"sentence": "The buzzing noise caused a dozen problems.", "difficulty": "intermediate"},
+    ],
+    "w": [
+        {"sentence": "We will walk with the wind.", "difficulty": "basic"},
+        {"sentence": "Would you wait while I wash the window?", "difficulty": "intermediate"},
+    ],
+    "r": [
+        {"sentence": "Run around the red river.", "difficulty": "basic"},
+        {"sentence": "The rural road required repairs after the rain.", "difficulty": "intermediate"},
+    ],
+    "n": [
+        {"sentence": "Nine new notebooks near the window.", "difficulty": "basic"},
+        {"sentence": "Neither of the knives needs cleaning now.", "difficulty": "intermediate"},
+    ],
+    "dʒ": [
+        {"sentence": "Just enjoy the job.", "difficulty": "basic"},
+        {"sentence": "The judge rejected the major changes.", "difficulty": "intermediate"},
+    ],
+    "ɔɪ": [
+        {"sentence": "The boy enjoyed the toy.", "difficulty": "basic"},
+        {"sentence": "Roy avoided the noisy oil joint.", "difficulty": "intermediate"},
+    ],
+    "ɪ": [
+        {"sentence": "It is a big fish dish.", "difficulty": "basic"},
+        {"sentence": "The village is built on a hilly ridge.", "difficulty": "intermediate"},
+    ],
+    "ŋ": [
+        {"sentence": "Sing a long song this evening.", "difficulty": "basic"},
+        {"sentence": "The ringing and clanging was getting stronger.", "difficulty": "intermediate"},
+    ],
+    "s": [
+        {"sentence": "Sam sells sea shells by the sea shore.", "difficulty": "basic"},
+        {"sentence": "The scientist stressed the success of the system.", "difficulty": "intermediate"},
+    ],
+    "æ": [
+        {"sentence": "The cat sat on the black mat.", "difficulty": "basic"},
+        {"sentence": "Ann has a bad habit of clapping hands rapidly.", "difficulty": "intermediate"},
+    ],
+    "p": [
+        {"sentence": "Peter picked a pack of peppers.", "difficulty": "basic"},
+        {"sentence": "The puppet performance appeared pretty impressive.", "difficulty": "intermediate"},
+    ],
+    "b": [
+        {"sentence": "Bob bought a big blue bag.", "difficulty": "basic"},
+        {"sentence": "The baby grabbed the rubber ball beside the bed.", "difficulty": "intermediate"},
+    ],
+    "t": [
+        {"sentence": "Take the train to town today.", "difficulty": "basic"},
+        {"sentence": "The tourist took a taste of the tasty tart.", "difficulty": "intermediate"},
+    ],
+    "k": [
+        {"sentence": "Keep the cat in the kitchen.", "difficulty": "basic"},
+        {"sentence": "The colorful kite caught the cool breeze quickly.", "difficulty": "intermediate"},
+    ],
+    "g": [
+        {"sentence": "Get the big green bag.", "difficulty": "basic"},
+        {"sentence": "The goat grabbed the green grass near the garden gate.", "difficulty": "intermediate"},
+    ],
+    "v": [
+        {"sentence": "Vivian loves to visit every valley.", "difficulty": "basic"},
+        {"sentence": "The driver moved the vehicle over the curved road.", "difficulty": "intermediate"},
+    ],
+    "h": [
+        {"sentence": "He held his hat in his hand.", "difficulty": "basic"},
+        {"sentence": "The happy hiker headed home through the hills.", "difficulty": "intermediate"},
+    ],
+    "j": [
+        {"sentence": "Yes you can use your yellow yacht.", "difficulty": "basic"},
+        {"sentence": "The young student yearned for years to play.", "difficulty": "intermediate"},
+    ],
+    "ʃ": [
+        {"sentence": "She sells shells at the shore.", "difficulty": "basic"},
+        {"sentence": "The sharp shadow showed the shape of the shed.", "difficulty": "intermediate"},
+    ],
+    "tʃ": [
+        {"sentence": "Charles chose to eat peach and cheese.", "difficulty": "basic"},
+        {"sentence": "The teacher challenged each child to reach their potential.", "difficulty": "intermediate"},
+    ],
+    "ʒ": [
+        {"sentence": "It was a usual pleasure.", "difficulty": "basic"},
+        {"sentence": "The beige garage had a casual and leisurely atmosphere.", "difficulty": "intermediate"},
+    ],
+    "aɪ": [
+        {"sentence": "I like to fly kites at night.", "difficulty": "basic"},
+        {"sentence": "The bright light guided my eyes through the wide sky.", "difficulty": "intermediate"},
+    ],
+    "aʊ": [
+        {"sentence": "How now brown cow.", "difficulty": "basic"},
+        {"sentence": "The loud crowd gathered around the south mountain town.", "difficulty": "intermediate"},
+    ],
+    "ʌ": [
+        {"sentence": "The sun comes up above the mud.", "difficulty": "basic"},
+        {"sentence": "The young monk studied until the summer was done.", "difficulty": "intermediate"},
+    ],
+    "ʊ": [
+        {"sentence": "Look at the good book.", "difficulty": "basic"},
+        {"sentence": "The woman stood by the wooden foot of the brook.", "difficulty": "intermediate"},
+    ],
+    "u": [
+        {"sentence": "Move the blue shoe to the room.", "difficulty": "basic"},
+        {"sentence": "The smooth music from the flute flew through the school.", "difficulty": "intermediate"},
+    ],
+    "ɛ": [
+        {"sentence": "Get the red pen off the desk.", "difficulty": "basic"},
+        {"sentence": "The healthy men meant to measure the length carefully.", "difficulty": "intermediate"},
+    ],
+    "ɑ": [
+        {"sentence": "The father watched the calm dark water.", "difficulty": "basic"},
+        {"sentence": "The honest artist carved a large marble heart.", "difficulty": "intermediate"},
+    ],
+    "ɔ": [
+        {"sentence": "The dog walked along the long hall.", "difficulty": "basic"},
+        {"sentence": "The author often talked about the awesome autumn fog.", "difficulty": "intermediate"},
+    ],
+}
+
+
+def _compute_next_milestone(profile: UserPronunciationProfile) -> str:
+    lp = profile.level_progress or {}
+    exercises_at_level = int(lp.get("exercises_at_level", 0))
+    required = int(lp.get("required_for_next", LEVEL_REQUIREMENTS.get(profile.current_level or "basic", 20)))
+    remaining = max(0, required - exercises_at_level)
+
+    if remaining == 0:
+        return "You are eligible to level up! Keep your average score above 70%."
+    return f"Complete {remaining} more exercise(s) at this level to progress."
+
+
+@router.get(
+    "/recommendations/{user_id}",
+    summary="Get personalised pronunciation recommendations",
+)
+def get_pronunciation_recommendations(user_id: uuid.UUID, db: Session = Depends(get_db)):
+    
+    Returns practice sentences targeting the user's weak phonemes.
+    If the user has no profile or no weak phonemes, returns general exercises.
+    
+    profile = (
+        db.query(UserPronunciationProfile)
+        .filter(UserPronunciationProfile.user_id == user_id)
+        .first()
+    )
+
+=======
+
+def safe_level_progress(profile: UserPronunciationProfile):
+    """
+    Guarantee a valid dict structure for level_progress.
+    Avoids KeyError and NoneType crashes.
+    """
+    lp = profile.level_progress or {}
+
+    return {
+        "exercises_at_level": int(lp.get("exercises_at_level", 0)),
+        "required": int(lp.get("required_for_next", 20)),
+        "current": lp.get("current", profile.current_level),
+        "avg_score_at_level": float(lp.get("avg_score_at_level", 0))
+    }
+
+
+def compute_next_milestone(profile: UserPronunciationProfile):
+    """
+    Determines the next milestone safely.
+    """
+    lp = safe_level_progress(profile)
+
+    remaining = lp["required"] - lp["exercises_at_level"]
+
+    if remaining <= 0:
+        return "You are eligible to level up after scoring above 75% consistently."
+
+    return f"Complete {remaining} more exercises to reach the next level."
+
+
+@router.get("/recommendations/{user_id}")
+def get_pronunciation_recommendations(user_id: int, db: Session = Depends(get_db)):
+    """
+    Generate a personalized recommendation set based on weak phonemes.
+    """
+
+    profile = db.query(UserPronunciationProfile).filter_by(user_id=user_id).first()
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
+    if not profile:
+        return {
+            "focus_areas": [],
+            "suggested_practice_time_mins": 10,
+<<<<<<< HEAD
+            "next_milestone": "No data yet. Complete your first exercise to get recommendations.",
+        }
+
+    # Fetch weak phonemes from live performance data
+    weak_rows = (
+        db.query(PhonemePerformance)
+        .filter(
+            PhonemePerformance.user_id == user_id,
+            PhonemePerformance.accuracy_pct < 50,
+        )
+        .all()
+    )
+
+    focus_areas = []
+    for row in weak_rows:
+        exercises = SENTENCE_BANK.get(row.phoneme, [])
+        if exercises:
+            focus_areas.append({
+                "phoneme": row.phoneme,
+                "exercises": exercises,
+            })
+
+    # Suggested practice time: 5 min base + 3 min per weak phoneme (max 30)
+    suggested_mins = min(30, 5 + len(focus_areas) * 3)
+
+    return {
+        "focus_areas": focus_areas,
+        "suggested_practice_time_mins": suggested_mins,
+        "next_milestone": _compute_next_milestone(profile),
+    }"""
+=======
+            "next_milestone": "No data available. Complete your first exercise."
+        }
+
+    # Fetch phoneme performance
+    phonemes = db.query(PhonemePerformance).filter_by(user_id=user_id).all()
+
+    weak_phonemes = []
+    for p in phonemes:
+        if p.accuracy_pct is not None:
+            acc = float(p.accuracy_pct)
+            if acc < 50:
+                weak_phonemes.append(p)
+
+    focus_areas = []
+    for w in weak_phonemes:
+        examples = SENTENCE_BANK.get(w.phoneme, [])
+        focus_areas.append({
+            "phoneme": w.phoneme,
+            "exercises": examples
+        })
+
+    next_milestone = compute_next_milestone(profile)
+
+    return {
+        "focus_areas": focus_areas,
+        "suggested_practice_time_mins": 15,
+        "next_milestone": next_milestone
+    }
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f

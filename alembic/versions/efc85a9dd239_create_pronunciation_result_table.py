@@ -9,11 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-<<<<<<< HEAD
 from sqlalchemy.dialects.postgresql import JSONB
-=======
->>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
-
 
 
 # revision identifiers, used by Alembic.
