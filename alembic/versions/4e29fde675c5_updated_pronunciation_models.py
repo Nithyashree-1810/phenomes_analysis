@@ -1,0 +1,105 @@
+"""updated pronunciation models
+
+Revision ID: 4e29fde675c5
+Revises: 2e001eb99715
+Create Date: 2026-04-05 10:08:29.203016
+"""
+from typing import Sequence, Union
+
+from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
+
+# revision identifiers
+revision: str = "4e29fde675c5"
+down_revision: Union[str, Sequence[str], None] = "2e001eb99715"
+branch_labels = None
+depends_on = None
+
+
+def upgrade() -> None:
+    # Enable UUID generation
+    op.execute('CREATE EXTENSION IF NOT EXISTS "pgcrypto";')
+
+    # user_pronunciation_profile table
+    op.create_table(
+        "user_pronunciation_profile",
+        sa.Column(
+            "id",
+            postgresql.UUID(as_uuid=True),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column(
+            "user_id",
+            postgresql.UUID(as_uuid=True),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column("current_level", sa.String(20), nullable=False),
+        sa.Column("overall_score_avg", sa.Numeric(5, 2)),
+        sa.Column("exercises_completed", sa.Integer(), nullable=False),
+        sa.Column("time_spent_total_secs", sa.Integer(), nullable=False),
+        sa.Column("weak_phonemes", postgresql.JSONB(astext_type=sa.Text())),
+        sa.Column("strong_phonemes", postgresql.JSONB(astext_type=sa.Text())),
+        sa.Column("level_progress", postgresql.JSONB(astext_type=sa.Text())),
+        sa.Column("last_practice_at", sa.DateTime(timezone=True)),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=True,
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        "ix_user_pronunciation_profile_user_id",
+        "user_pronunciation_profile",
+        ["user_id"],
+        unique=True,
+    )
+
+    # phoneme_performance table
+    op.create_table(
+        "phoneme_performance",
+        sa.Column(
+            "id",
+            postgresql.UUID(as_uuid=True),
+            server_default=sa.text("gen_random_uuid()"),
+            nullable=False,
+        ),
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("phoneme", sa.String(50), nullable=False),
+        sa.Column("total_attempts", sa.Integer(), nullable=False),
+        sa.Column("correct_attempts", sa.Integer(), nullable=False),
+        sa.Column("accuracy_pct", sa.Numeric(5, 2)),
+        sa.Column(
+            "last_attempted_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("now()"),
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["user_pronunciation_profile.user_id"],
+            ondelete="CASCADE",
+        ),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("user_id", "phoneme", name="uq_user_phoneme"),
+    )
+    op.create_index(
+        "ix_phoneme_performance_user_id",
+        "phoneme_performance",
+        ["user_id"],
+    )
+
+
+def downgrade() -> None:
+    op.drop_index(
+        "ix_phoneme_performance_user_id", table_name="phoneme_performance"
+    )
+    op.drop_table("phoneme_performance")
+    op.drop_index(
+        "ix_user_pronunciation_profile_user_id",
+        table_name="user_pronunciation_profile",
+    )
+    op.drop_table("user_pronunciation_profile")
