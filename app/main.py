@@ -20,7 +20,6 @@ from app.routes.listening_route import router as listening_router
 from app.routes.listening_test_route import router as eval_router
 from app.routes.recommendations_route import router as recommendations_router
 from app.routes.pronun_profile_route import router as pronun_profile_router
-<<<<<<< HEAD
 
 # ── Bootstrap logging & tracing before anything else ────────────────────────
 setup_logging()
@@ -31,9 +30,6 @@ logger = logging.getLogger(__name__)
 # ── GPU / CUDA config ────────────────────────────────────────────────────────
 # Set to "" to force CPU; set to "0" (or "0,1") to use specific GPU(s).
 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
-=======
-from dotenv import load_dotenv
->>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 
 
 # ── Lifespan: load heavy models once at startup ──────────────────────────────
@@ -67,11 +63,7 @@ app = FastAPI(
 # ── Routers ──────────────────────────────────────────────────────────────────
 app.include_router(audio_router)
 app.include_router(question_router)
-<<<<<<< HEAD
 app.include_router(listening_router)
-=======
-app.include_router(listening_router) 
->>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 app.include_router(eval_router)
 app.include_router(recommendations_router)
 app.include_router(pronun_profile_router)

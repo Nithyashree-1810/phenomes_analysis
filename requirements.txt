@@ -26,3 +26,4 @@ alembic
 uvicorn
 pydantic-settings
 gtts
+pytest
