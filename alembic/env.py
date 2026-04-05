@@ -5,7 +5,11 @@ from sqlalchemy import pool
 
 from alembic import context
 
+<<<<<<< HEAD
 from app.models import listening_model,pronunciation_models
+=======
+from app.models import user, pronunciation_models
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 from app.db.base import Base
 
 # this is the Alembic Config object, which provides
