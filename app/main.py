@@ -20,7 +20,7 @@ from app.routes.listening_route import router as listening_router
 from app.routes.listening_test_route import router as eval_router
 from app.routes.recommendations_route import router as recommendations_router
 from app.routes.pronun_profile_route import router as pronun_profile_router
-
+from app.routes.progress_route import router as progress_router
 # ── Bootstrap logging & tracing before anything else ────────────────────────
 setup_logging()
 setup_tracing()
@@ -67,7 +67,7 @@ app.include_router(listening_router)
 app.include_router(eval_router)
 app.include_router(recommendations_router)
 app.include_router(pronun_profile_router)
-
+app.include_router(progress_router)
 # ── Static files ─────────────────────────────────────────────────────────────
 app.mount("/static", StaticFiles(directory=settings.STATIC_AUDIO_DIR.rsplit("/", 1)[0]), name="static")
 
