@@ -376,5 +376,9 @@ def compute_pronunciation_scores(
         "tips": tips,
         "phoneme_details": phoneme_details,
         "strong_phonemes": strong_phonemes,
+<<<<<<< HEAD
         "weak_phonemes": weak_phonemes,
+=======
+        "weak_phonemes": weak_phonemes
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     }

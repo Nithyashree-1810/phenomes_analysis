@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.models import listening_model,pronunciation_models,progress_model
+from app.models import listening_model,pronunciation_models
 from app.db.base import Base
 
 # this is the Alembic Config object, which provides

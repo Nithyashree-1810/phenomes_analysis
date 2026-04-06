@@ -67,7 +67,7 @@ app.include_router(listening_router)
 app.include_router(eval_router)
 app.include_router(recommendations_router)
 app.include_router(pronun_profile_router)
-app.include_router(progress_router)
+app.
 # ── Static files ─────────────────────────────────────────────────────────────
 app.mount("/static", StaticFiles(directory=settings.STATIC_AUDIO_DIR.rsplit("/", 1)[0]), name="static")
 

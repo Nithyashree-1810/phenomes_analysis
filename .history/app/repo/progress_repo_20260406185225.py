@@ -1,0 +1,40 @@
+from sqlalchemy.orm import Session
+import uuid
+
+from app.models.pronunciation_models import (
+    UserPronunciationProfile,
+    PhonemePerformance,
+)
+
+
+def get_phoneme_rows(db: Session, user_id: uuid.UUID):
+    return (
+        db.query(PhonemePerformance)
+        .filter(PhonemePerformance.user_id == user_id)
+        .all()
+    )
+
+
+def get_progress(db: Session, user_id: uuid.UUID):
+    return (
+        db.query(UserPronunciatio)
+        .filter(UserPronunciationProgress.user_id == user_id)
+        .first()
+    )
+
+
+def upsert_progress(db: Session, user_id: uuid.UUID, data: dict):
+    progress = get_progress(db, user_id)
+
+    if not progress:
+        progress = UserPronunciationProgress(user_id=user_id)
+        db.add(progress)
+
+    progress.total_levels = data["total_levels"]
+    progress.current_level = data["current_level"]
+    progress.completion_pct = data["completion_pct"]
+    progress.avg_score = data["avg_score"]
+    progress.weak_phonemes = data["weak_phonemes"]
+    progress.time_spent_mins = data["time_spent_mins"]
+
+    return progress

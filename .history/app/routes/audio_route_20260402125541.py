@@ -76,7 +76,7 @@ async def analyze_audio(
 
             phoneme_results.append({
                 "phoneme": phoneme,
-                "correct": correct_at
+                "correct": correct_attempts > 0,
             })
 
         # ---------------------------------------------------------

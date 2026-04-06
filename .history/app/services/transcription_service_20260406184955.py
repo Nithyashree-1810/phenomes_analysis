@@ -20,6 +20,7 @@ def transcribe_audio(file_path: str | Path) -> str:
                 response_format="text" # returns plain string directly
             )
 
+<<<<<<< HEAD
         text = response.strip().replace("\n", " ").replace("  ", " ")
         logger.info("Transcription complete: %s", text[:80])
         return text
@@ -29,4 +30,21 @@ def transcribe_audio(file_path: str | Path) -> str:
             "transcribe_audio failed — type=%s reason=%s path=%s",
             type(exc).__name__, exc, file_path
         )
+=======
+        # Safely extract text
+        text = (
+            getattr(response, "text", None)
+            or response.get("text")
+            or response.get("transcript")
+            or ""
+        )
+
+        # Normalize
+        if text:
+            text = text.strip().replace("\n", " ").replace("  ", " ")
+
+        return text
+
+    except Exception as e:
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
         return ""

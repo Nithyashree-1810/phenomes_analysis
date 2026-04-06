@@ -57,6 +57,7 @@ def split_ipa(ipa: str) -> list[str]:
     return tokens
 
 
+<<<<<<< HEAD
 def normalize_ipa(ipa: str) -> str:
     """Lowercase and strip bracketing characters."""
     if not ipa:
@@ -82,10 +83,24 @@ def levenshtein_tokens(a: list[str], b: list[str]) -> int:
         for j, tok_b in enumerate(b, 1):
             cost = 0 if tok_a == tok_b else 1
             curr.append(min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost))
+=======
+def levenshtein(a: str, b: str) -> int:
+    if len(a) < len(b):
+        a, b = b, a
+    if len(b) == 0:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        curr = [i]
+        for j, cb in enumerate(b, 1):
+            cost = 0 if ca == cb else 1
+            curr.append(min(prev[j] + 1, curr[j-1] + 1, prev[j-1] + cost))
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
         prev = curr
     return prev[-1]
 
 
+<<<<<<< HEAD
 def clean_phonemes(phoneme_details: list[dict]) -> list[dict]:
     """Remove entries whose 'phoneme' key is not in VALID_IPA."""
     return [
@@ -300,10 +315,82 @@ def compute_pronunciation_scores(
     phoneme_details: list[dict] = []
     strong_phonemes: list[dict] = []
     weak_phonemes: list[dict] = []
+=======
+# -------------------------------
+# Fluency scoring
+# -------------------------------
+def compute_fluency(transcript: str) -> float:
+    if not transcript:
+        return 0.0
+    penalties = sum(transcript.lower().count(f) for f in ["um", "uh", "erm", "like", "...", "--"])
+    score = 1.0 - min(0.5, penalties * 0.1)
+    return round(score, 3)
+
+
+# -------------------------------
+# Mistakes & tips
+# -------------------------------
+def gpt_extract_mistakes(reference: str, transcript: str):
+    prompt = f"""
+Compare the reference sentence and the spoken transcript.
+REFERENCE:
+{reference}
+TRANSCRIPT:
+{transcript}
+Return ONLY a JSON array named "mistakes" with:
+{{"expected":"<word>","spoken":"<word>","type":"missing|wrong|extra"}}
+"""
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=300,
+            temperature=0.0
+        )
+        match = re.search(r"\[.*\]", res.choices[0].message.content.strip(), re.DOTALL)
+        return json.loads(match.group(0)) if match else []
+    except:
+        return []
+
+
+def gpt_generate_tips(reference_text, transcript, mistakes):
+    prompt = f"""
+The user read a sentence aloud and made the following pronunciation mistakes:
+REFERENCE: {reference_text}
+TRANSCRIPT: {transcript}
+MISTAKES: {json.dumps(mistakes, indent=2)}
+Give 2-3 actionable pronunciation tips ONLY targeting these mistakes.
+Return ONLY a JSON list of strings.
+"""
+    try:
+        res = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+            max_tokens=120
+        )
+        match = re.search(r"\[.*\]", res.choices[0].message.content.strip(), re.DOTALL)
+        return json.loads(match.group(0)) if match else ["Focus on the mispronounced words."]
+    except:
+        return ["Focus on the mispronounced words."]
+
+
+# ============================================================
+# MAIN PRONUNCIATION SCORING
+# ============================================================
+def compute_pronunciation_scores(reference_text: str, transcript: str):
+    ref_ipa = normalize_ipa(gpt_extract_ipa(reference_text))
+    user_ipa = normalize_ipa(gpt_extract_ipa(transcript))
+
+    phoneme_details = []
+    strong_phonemes = []
+    weak_phonemes = []
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 
     if ref_ipa and user_ipa:
         ref_tokens = split_ipa(ref_ipa)
         user_tokens = split_ipa(user_ipa)
+<<<<<<< HEAD
         min_len = min(len(ref_tokens), len(user_tokens))
 
         for i in range(min_len):
@@ -338,10 +425,39 @@ def compute_pronunciation_scores(
             weak_phonemes.append({"phoneme": ref_ph})
 
     # ── Step 3: Filter invalid IPA ────────────────────────────────────────────
+=======
+
+        min_len = min(len(ref_tokens), len(user_tokens))
+
+        for i in range(min_len):
+            r = ref_tokens[i]
+            u = user_tokens[i]
+
+            total_attempts = 1
+            correct = (r == u)
+            accuracy = 100 if correct else 0
+
+            phoneme_details.append({
+                "phoneme": r,
+                "total_attempts": 1,
+                "correct_attempts": 1 if correct else 0,
+                "accuracy": accuracy
+            })
+
+            if accuracy >= 70:
+                strong_phonemes.append({"phoneme": r})
+            if accuracy < 50:
+                weak_phonemes.append({"phoneme": r})
+
+    # -------------------------------
+    # CLEAN INVALID PHONEMES
+    # -------------------------------
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     phoneme_details = clean_phonemes(phoneme_details)
     strong_phonemes = clean_phonemes(strong_phonemes)
     weak_phonemes = clean_phonemes(weak_phonemes)
 
+<<<<<<< HEAD
     # ── Step 4: Phoneme score (token-level Levenshtein) ───────────────────────
     if not ref_ipa or not user_ipa:
         phoneme_score = 0.0
@@ -362,6 +478,22 @@ def compute_pronunciation_scores(
     tips = gpt_generate_tips(reference_text, transcript, mistakes)
 
     # ── Step 8: Overall score ─────────────────────────────────────────────────
+=======
+    # -------------------------------
+    # SCORE CALCULATIONS
+    # -------------------------------
+    if not ref_ipa or not user_ipa:
+        phoneme_score = 0
+    else:
+        dist = levenshtein(ref_ipa, user_ipa)
+        max_len = max(len(ref_ipa), len(user_ipa))
+        phoneme_score = round(max(1 - dist / max_len, 0) * 100)
+
+    fluency_score = compute_fluency(transcript)
+    mistakes = gpt_extract_mistakes(reference_text, transcript)
+    tips = gpt_generate_tips(reference_text, transcript, mistakes) if mistakes else ["Great job!"]
+
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     overall_score = round(phoneme_score * 0.7 + fluency_score * 100 * 0.3, 2)
 
     return {
@@ -376,5 +508,9 @@ def compute_pronunciation_scores(
         "tips": tips,
         "phoneme_details": phoneme_details,
         "strong_phonemes": strong_phonemes,
+<<<<<<< HEAD
         "weak_phonemes": weak_phonemes,
+=======
+        "weak_phonemes": weak_phonemes
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     }

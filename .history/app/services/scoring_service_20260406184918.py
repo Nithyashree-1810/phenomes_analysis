@@ -304,6 +304,7 @@ def compute_pronunciation_scores(
     if ref_ipa and user_ipa:
         ref_tokens = split_ipa(ref_ipa)
         user_tokens = split_ipa(user_ipa)
+<<<<<<< HEAD
         min_len = min(len(ref_tokens), len(user_tokens))
 
         for i in range(min_len):
@@ -338,10 +339,39 @@ def compute_pronunciation_scores(
             weak_phonemes.append({"phoneme": ref_ph})
 
     # ── Step 3: Filter invalid IPA ────────────────────────────────────────────
+=======
+
+        min_len = min(len(ref_tokens), len(user_tokens))
+
+        for i in range(min_len):
+            r = ref_tokens[i]
+            u = user_tokens[i]
+
+            total_attempts = 1
+            correct = (r == u)
+            accuracy = 100 if correct else 0
+
+            phoneme_details.append({
+                "phoneme": r,
+                "total_attempts": 1,
+                "correct_attempts": 1 if correct else 0,
+                "accuracy": accuracy
+            })
+
+            if accuracy >= 70:
+                strong_phonemes.append({"phoneme": r})
+            if accuracy < 50:
+                weak_phonemes.append({"phoneme": r})
+
+    # -------------------------------
+    # CLEAN INVALID PHONEMES
+    # -------------------------------
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     phoneme_details = clean_phonemes(phoneme_details)
     strong_phonemes = clean_phonemes(strong_phonemes)
     weak_phonemes = clean_phonemes(weak_phonemes)
 
+<<<<<<< HEAD
     # ── Step 4: Phoneme score (token-level Levenshtein) ───────────────────────
     if not ref_ipa or not user_ipa:
         phoneme_score = 0.0
@@ -362,6 +392,22 @@ def compute_pronunciation_scores(
     tips = gpt_generate_tips(reference_text, transcript, mistakes)
 
     # ── Step 8: Overall score ─────────────────────────────────────────────────
+=======
+    # -------------------------------
+    # SCORE CALCULATIONS
+    # -------------------------------
+    if not ref_ipa or not user_ipa:
+        phoneme_score = 0
+    else:
+        dist = levenshtein(ref_ipa, user_ipa)
+        max_len = max(len(ref_ipa), len(user_ipa))
+        phoneme_score = round(max(1 - dist / max_len, 0) * 100)
+
+    fluency_score = compute_fluency(transcript)
+    mistakes = gpt_extract_mistakes(reference_text, transcript)
+    tips = gpt_generate_tips(reference_text, transcript, mistakes) if mistakes else ["Great job!"]
+
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     overall_score = round(phoneme_score * 0.7 + fluency_score * 100 * 0.3, 2)
 
     return {
@@ -376,5 +422,9 @@ def compute_pronunciation_scores(
         "tips": tips,
         "phoneme_details": phoneme_details,
         "strong_phonemes": strong_phonemes,
+<<<<<<< HEAD
         "weak_phonemes": weak_phonemes,
+=======
+        "weak_phonemes": weak_phonemes
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     }

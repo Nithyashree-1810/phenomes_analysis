@@ -22,7 +22,11 @@ class WeakPhoneme(BaseModel):
 
 class StrongPhoneme(BaseModel):
     phoneme: str
+<<<<<<< HEAD
     accuracy: float = Field(..., ge=0.0, le=1.0)
+=======
+    accuracy: float
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 
 
 class LevelProgress(BaseModel):
@@ -33,7 +37,11 @@ class LevelProgress(BaseModel):
 
 
 class UserPronunciationProfileOut(BaseModel):
+<<<<<<< HEAD
     user_id: UUID                          # int → UUID
+=======
+    user_id: int   # ← UPDATED (was UUID)
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
     current_level: str
     overall_score_avg: float
     exercises_completed: int
@@ -41,6 +49,7 @@ class UserPronunciationProfileOut(BaseModel):
     weak_phonemes: List[WeakPhoneme]
     strong_phonemes: List[StrongPhoneme]
     level_progress: LevelProgress
+<<<<<<< HEAD
     last_practice: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -73,6 +82,13 @@ class AnalyzeAudioOut(BaseModel):
     strong_phonemes: List[StrongPhoneme]
     mistakes: List[MistakeOut]
     tips: List[str]
+=======
+    last_practice: Optional[datetime]
+
+    model_config = {
+        "from_attributes": True
+    }
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
 
 
 class RecommendationSentence(BaseModel):
@@ -88,6 +104,7 @@ class RecommendationItem(BaseModel):
 class PronunciationRecommendationOut(BaseModel):
     focus_areas: List[RecommendationItem]
     suggested_practice_time_mins: int
+<<<<<<< HEAD
     next_milestone: str
 
 
@@ -110,3 +127,6 @@ class ListeningEvalOut(BaseModel):
 class QuestionOut(BaseModel):
     difficulty: str
     question_text: str
+=======
+    next_milestone: str
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f

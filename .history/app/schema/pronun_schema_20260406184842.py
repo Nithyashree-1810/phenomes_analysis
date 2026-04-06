@@ -88,6 +88,7 @@ class RecommendationItem(BaseModel):
 class PronunciationRecommendationOut(BaseModel):
     focus_areas: List[RecommendationItem]
     suggested_practice_time_mins: int
+<<<<<<< HEAD
     next_milestone: str
 
 
@@ -110,3 +111,6 @@ class ListeningEvalOut(BaseModel):
 class QuestionOut(BaseModel):
     difficulty: str
     question_text: str
+=======
+    next_milestone: str
+>>>>>>> bee88e98780f18963f2282e9f3b190f58784ae4f
