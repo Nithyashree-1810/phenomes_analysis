@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 import time
+import whisper
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session
@@ -13,11 +14,11 @@ from app.repo.pronunciation_repo import get_or_create_profile
 from app.services.audio_service import convert_to_wav
 from app.services.post_ex_service import post_exercise_hook
 from app.services.scoring_service import compute_pronunciation_scores
-from app.services.transcription_service import transcribe_audio
-from app.core.config import settings
+from app.services.transcription_service import get_whisper_model, transcribe_audio
+from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
-
+cfg= get_settings()
 router = APIRouter(prefix="/test", tags=["Pronunciation"])
 
 
@@ -26,6 +27,7 @@ async def analyze_audio(
     file: UploadFile,
     user_id: uuid.UUID = Query(..., description="Caller-supplied UUID user ID"),
     db: Session = Depends(get_db),
+    model: "whisper.Whisper" = Depends(get_whisper_model),
     # reference_text is now optional — uses stored question if not passed
     reference_text: str | None = Query(None, description="The sentence the user should have spoken (optional if /next was called)"),
 ):
@@ -40,7 +42,7 @@ async def analyze_audio(
     """
     request_id = str(uuid.uuid4())
     start_time = time.time()
-    temp_dir = Path(settings.TEMP_DIR)
+    temp_dir = Path(cfg.TEMP_DIR)
     temp_dir.mkdir(parents=True, exist_ok=True)
 
     original_suffix = Path(file.filename or "audio.bin").suffix or ".bin"
@@ -69,7 +71,7 @@ async def analyze_audio(
         wav_path = convert_to_wav(temp_path, audio_format)
 
         # ── 5. Transcribe ─────────────────────────────────────────────────────
-        transcript = transcribe_audio(wav_path)
+        transcript, _confidence = transcribe_audio(wav_path, model)
         if not transcript:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

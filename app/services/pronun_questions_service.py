@@ -5,7 +5,7 @@ import re
 
 from langchain_core.messages import HumanMessage
 
-from app.services.llm_client import get_chat_llm
+from app.services.llm_client import get_azure_chat_llm
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ class PronunciationQuestionsService:
             num_questions=num_questions,
             difficulty=difficulty,
         )
-        llm = get_chat_llm(temperature=0.7)
+        llm = get_azure_chat_llm(temperature=0.7)
         try:
             response = llm.invoke(
                 [HumanMessage(content=prompt)],
@@ -75,7 +75,7 @@ def generate_pronunciation_questions(passage: str, num_questions: int = 2) -> li
         '  [{"difficulty": "medium", "question": "<sentence>"}]\n'
         "No other text."
     )
-    llm = get_chat_llm(temperature=0.7)
+    llm = get_azure_chat_llm(temperature=0.7)
     try:
         response = llm.invoke(
             [HumanMessage(content=prompt)],

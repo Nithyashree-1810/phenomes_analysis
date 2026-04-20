@@ -4,10 +4,10 @@ Bootstrap LangSmith tracing.  Call setup_tracing() once at startup.
 """
 import os
 import logging
-from app.core.config import settings
+from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
-
+cfg = get_settings()
 
 def setup_tracing() -> None:
     """
@@ -20,11 +20,11 @@ def setup_tracing() -> None:
     endpoint = os.environ.get("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
     project = os.environ.get("LANGCHAIN_PROJECT", "phenome_analysis_agent")
 
-    if not settings.LANGCHAIN_TRACING_V2:
+    if not cfg.LANGCHAIN_TRACING_V2:
         logger.info("LangSmith tracing disabled (LANGCHAIN_TRACING_V2=false)")
         return
 
-    if not settings.LANGCHAIN_API_KEY:
+    if not cfg.LANGCHAIN_API_KEY:
         logger.warning(
             "LANGCHAIN_TRACING_V2 is true but LANGCHAIN_API_KEY is empty — tracing skipped"
         )
@@ -37,6 +37,6 @@ def setup_tracing() -> None:
 
     logger.info(
         "LangSmith tracing enabled → project=%s  endpoint=%s",
-        settings.LANGCHAIN_PROJECT,
-        settings.LANGCHAIN_ENDPOINT,
+        cfg.LANGCHAIN_PROJECT,
+        cfg.LANGCHAIN_ENDPOINT,
     )
