@@ -8,10 +8,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
-from app.core.config import settings
-
+from app.core.config import get_settings
+cfg= get_settings()
 engine = create_engine(
-    settings.DATABASE_URL,
+    cfg.DATABASE_URL,
     pool_pre_ping=True,      # detect stale connections
     pool_size=10,
     max_overflow=20,

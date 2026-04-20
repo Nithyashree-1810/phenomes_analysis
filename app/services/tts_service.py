@@ -3,11 +3,12 @@ from pathlib import Path
 
 from gtts import gTTS
 
-from app.core.config import settings
+from app.core.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-AUDIO_DIR = Path(settings.STATIC_AUDIO_DIR)
+cfg = get_settings()
+AUDIO_DIR = Path(cfg.STATIC_AUDIO_DIR)
 AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
 
