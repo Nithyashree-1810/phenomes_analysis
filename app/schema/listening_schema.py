@@ -2,6 +2,36 @@
 from pydantic import BaseModel, Field
 
 
+class MCQOption(BaseModel):
+    A: str
+    B: str
+    C: str
+    D: str
+
+
+class ListeningQuestionOut(BaseModel):
+    """Returned to client — correct_option intentionally excluded."""
+    id: int
+    cefr_level: str
+    question: str
+    options: MCQOption
+
+
+class ListeningQuestionStored(BaseModel):
+    """Internal schema — stored in DB with correct_option."""
+    id: int
+    cefr_level: str
+    question: str
+    options: MCQOption
+    correct_option: str
+
+class ListeningModuleOut(BaseModel):
+    session_id: str
+    passage: str
+    audio_url: str
+    listening_questions: list[ListeningQuestionOut]
+
+
 class MCQAnswerIn(BaseModel):
     question_id: int
     selected_option: str = Field(..., pattern="^[A-D]$")

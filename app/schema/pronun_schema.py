@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
@@ -33,7 +32,7 @@ class LevelProgress(BaseModel):
 
 
 class UserPronunciationProfileOut(BaseModel):
-    user_id: UUID                          # int → UUID
+    user_id: UUID
     current_level: str
     overall_score_avg: float
     exercises_completed: int
@@ -60,8 +59,8 @@ class MistakeOut(BaseModel):
 
 
 class AnalyzeAudioOut(BaseModel):
-    request_id: UUID                       # str → UUID
-    user_id: UUID                          # int → UUID
+    request_id: UUID
+    user_id: UUID
     reference_text: str
     transcript: str
     ref_ipa: str
@@ -89,22 +88,6 @@ class PronunciationRecommendationOut(BaseModel):
     focus_areas: List[RecommendationItem]
     suggested_practice_time_mins: int
     next_milestone: str
-
-
-class ListeningModuleOut(BaseModel):
-    session_id: UUID                       # str → UUID
-    passage: str
-    audio_url: str
-    listening_questions: List[dict]
-
-
-class ListeningEvalOut(BaseModel):
-    session_id: UUID                       # str → UUID
-    expected_answer: str
-    user_transcript: str
-    relevance: float
-    correctness: float
-    feedback: str
 
 
 class QuestionOut(BaseModel):

@@ -1,6 +1,6 @@
 import logging
 from openai import OpenAI
-from langchain_openai import AzureChatOpenAI
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
 
 from app.core.config import get_settings
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ cfg=get_settings()  # load settings once at module level to avoid repeated env v
 )"""
 
 def get_azure_chat_llm(temperature: float = 0.7) -> AzureChatOpenAI:
-    """Azure OpenAI LLM — used by listening module."""
+    #Azure OpenAI LLM — used by listening module.
     settings = get_settings()
     return AzureChatOpenAI(
         azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,

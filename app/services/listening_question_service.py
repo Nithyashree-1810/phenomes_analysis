@@ -2,6 +2,7 @@ import json
 import logging
 import re
 import uuid
+import random
 
 from langchain_core.messages import HumanMessage
 
@@ -12,9 +13,31 @@ from app.services.tts_service import text_to_speech
 logger = logging.getLogger(__name__)
 
 
+import random
+
+_TOPICS = [
+    "a job interview conversation",
+    "a professional email drafting scenario",
+    "a workplace meeting discussion",
+    "a business presentation",
+    "a client requirements call",
+    "a performance review conversation",
+    "a project status update meeting",
+    "a technical onboarding session",
+    "a team conflict resolution discussion",
+    "a product demo walkthrough",
+    "a salary negotiation conversation",
+    "a remote work policy briefing",
+    "a software deployment discussion",
+    "a customer support escalation call",
+    "a cross-team collaboration planning session",
+]
+
 _PASSAGE_PROMPT = (
     "Generate a short {difficulty}-level English passage for listening practice. "
-    "The passage should be 3-4 sentences long, natural, and engaging. "
+    "The passage should be based on this professional/technical scenario: {topic}. "
+    "The passage should be 3-4 sentences long, natural, and realistic. "
+    "Use professional vocabulary appropriate for the scenario. "
     "Output ONLY the passage text. No title, no explanation."
 )
 
@@ -29,18 +52,18 @@ _QUESTIONS_PROMPT = (
     "- Each question must have exactly 4 options labeled A, B, C, D.\n"
     "- Only one option must be correct.\n"
     "- Assign each question a CEFR level (A1, A2, B1, B2, C1, C2) based on its complexity.\n"
+    "- Do NOT repeat questions from previous sessions — vary the focus each time.\n"
     "- Return ONLY a JSON array in this exact format:\n"
     '  [{{"id": 1, "cefr_level": "B1", "question": "...", '
     '"options": {{"A": "...", "B": "...", "C": "...", "D": "..."}}, '
     '"correct_option": "A"}}]\n'
     "No other text."
 )
-
-
 def generate_listening_module(
     difficulty: str = "medium",
     num_questions: int = 3,
 ) -> dict:
+    
     session_id = str(uuid.uuid4())
     try:
         passage = generate_passage(difficulty)
@@ -77,17 +100,22 @@ def generate_listening_module(
 
 
 def generate_passage(difficulty: str = "medium") -> str:
-    llm = get_azure_chat_llm(temperature=0.7)
-    prompt = _PASSAGE_PROMPT.format(difficulty=difficulty)
+    llm = get_azure_chat_llm(temperature=0.9)
+    topic = random.choice(_TOPICS)
+    prompt = _PASSAGE_PROMPT.format(difficulty=difficulty, topic=topic)
     try:
         response = llm.invoke(
             [HumanMessage(content=prompt)],
             config={"run_name": "generate_listening_passage"},
         )
+        logger.info("Generated passage for topic: %s", topic)
         return response.content.strip()
     except Exception as exc:
         logger.error("generate_passage failed: %s", exc)
-        return "The sun rises in the east and sets in the west."
+        return (
+            "The interviewer asked the candidate to describe their experience "
+            "with cross-functional teams and how they handle competing priorities."
+        )
 
 
 def generate_questions_from_passage(
@@ -95,7 +123,7 @@ def generate_questions_from_passage(
     num_questions: int = 3,
     difficulty: str = "medium",
 ) -> list[dict]:
-    llm = get_azure_chat_llm(temperature=0.5)
+    llm = get_azure_chat_llm(temperature=0.8)  
     prompt = _QUESTIONS_PROMPT.format(
         passage=passage,
         num_questions=num_questions,
