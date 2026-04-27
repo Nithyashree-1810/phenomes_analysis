@@ -14,13 +14,10 @@ from app.core.config import get_settings
 from app.core.logging import setup_logging
 from app.core.tracing import setup_tracing
 
-from app.routes.question_route import router as question_router
-from app.routes.audio_route import router as audio_router
+
 from app.routes.listening_route import router as listening_router
 
-from app.routes.recommendations_route import router as recommendations_router
-from app.routes.pronun_profile_route import router as pronun_profile_router
-from app.routes.progress_route import router as progress_router
+
 from app.routes.pronunciation_route import router as pronunciation_router
 # ── Bootstrap logging & tracing before anything else ────────────────────────
 setup_logging()
@@ -63,13 +60,11 @@ app = FastAPI(
 )
 
 # ── Routers ──────────────────────────────────────────────────────────────────
-app.include_router(audio_router)
-app.include_router(question_router)
+
 app.include_router(listening_router)
 app.include_router(pronunciation_router)
-app.include_router(recommendations_router)
-app.include_router(pronun_profile_router)
-app.include_router(progress_router)
+
+
 # ── Static files ─────────────────────────────────────────────────────────────
 app.mount("/static", StaticFiles(directory=cfg.STATIC_AUDIO_DIR.rsplit("/", 1)[0]), name="static")
 
